@@ -1,6 +1,9 @@
 //js tabs
 
 
+const MF_STRING = 0x00000000;
+const MF_CHECKED = 0x00000008;
+
 // Use with GdiDrawText()
 const DT_CENTER = 0x00000001;
 const DT_VCENTER = 0x00000004;
@@ -59,11 +62,11 @@ let ww = 0;
 let wh = 0;
 let bw = 0;
 
-let tabs_visible = 5;
+let tabs_visible = 2;
 let active = window.GetProperty("active", 0);
 
 function RGB(r, g, b) {
-	return 0xFF000000 | r << 16 | g << 8 | b;
+    return 0xFF000000 | r << 16 | g << 8 | b;
 }
 
 get_font();
@@ -72,12 +75,22 @@ get_colours();
 function on_paint(gr) {
     gr.FillSolidRect(0, 0, ww, wh, g_backcolour);
 
-    gr.FillSolidRect(0, 0, bpn - 10, 25, g_backcolour4);
-    gr.GdiDrawText("<<<", g_font, g_hot ? g_textcolour_hl : g_textcolour, 0, 0, bpn, 25, DT_VCENTER | DT_CENTER | DT_WORDBREAK | DT_CALCRECT | DT_NOPREFIX);
+    if (p_array[active - 1]) {
+        gr.FillSolidRect(0, 0, bpn - 10, 25, g_backcolour4);
+        gr.GdiDrawText("<<", g_font, g_hot ? g_textcolour_hl : g_textcolour, 0, 0, bpn, 25, DT_VCENTER | DT_CENTER | DT_WORDBREAK | DT_CALCRECT | DT_NOPREFIX);
+    } else {
+        gr.FillSolidRect(0, 0, bpn - 10, 25, g_backcolour4);
+        gr.GdiDrawText("X", g_font, g_hot ? g_textcolour_hl : g_textcolour, 0, 0, bpn, 25, DT_VCENTER | DT_CENTER | DT_WORDBREAK | DT_CALCRECT | DT_NOPREFIX);
+    }
 
-    gr.FillSolidRect((bw * tabs_visible) - bpn, 0, bpn - 10, 25, g_backcolour4);
-    gr.GdiDrawText(">>>", g_font, g_hot ? g_textcolour_hl : g_textcolour, (bw * tabs_visible) - bpn - 10, 0, bpn, 25, DT_VCENTER | DT_CENTER | DT_WORDBREAK | DT_CALCRECT | DT_NOPREFIX);
+    if (p_array[active + 1]) {
+        gr.FillSolidRect((bw * tabs_visible) - bpn, 0, bpn - 10, 25, g_backcolour4);
+        gr.GdiDrawText(">>", g_font, g_hot ? g_textcolour_hl : g_textcolour, (bw * tabs_visible) - bpn - 10, 0, bpn, 25, DT_VCENTER | DT_CENTER | DT_WORDBREAK | DT_CALCRECT | DT_NOPREFIX);
+    } else {
+        gr.FillSolidRect((bw * tabs_visible) - bpn, 0, bpn - 10, 25, g_backcolour4);
+        gr.GdiDrawText("X", g_font, g_hot ? g_textcolour_hl : g_textcolour, (bw * tabs_visible) - bpn - 10, 0, bpn, 25, DT_VCENTER | DT_CENTER | DT_WORDBREAK | DT_CALCRECT | DT_NOPREFIX);
 
+    }
     tabs = 0;
     try {
         for (var i = active; i < active + tabs_visible - 1; i++) {
@@ -115,16 +128,26 @@ function on_mouse_lbtn_up(x, y) {
         hide_panels();
         window.Repaint();
     }
-    if (x > bpn && x < (ww - bpn)) {
-        let xval = x / (ww / (tabs_visible - 1));
-        arr_test = Math.floor(xval) + active;
-        if (arr_test < p_array.length) {
-            active = Math.floor(xval) + active;
-            window.SetProperty("active", active);
-            hide_panels();
-            window.Repaint();
-        }
+	
+	if (x > bpn && x < ww - bpn) {
+		let _menu = window.CreatePopupMenu();
+		for (var i = 0; i < p_array.length; i++) {
+			_menu.AppendMenuItem(i == active ? MF_STRING | MF_CHECKED : MF_STRING, i+1, p_array[i].split("_").pop());
+		}
+		
+		   let idx = _menu.TrackPopupMenu(bpn*1.5, 30);
+
+    switch (true) {
+    case idx == 0:
+        break;
+    default:
+	active = idx-1;
+        window.SetProperty("active", active);
+        hide_panels();
+        window.Repaint();
+        break;
     }
+	}
 }
 
 function on_mouse_move() {
@@ -171,7 +194,7 @@ function get_colours() {
         g_backcolour = window.GetColourCUI(ColourTypeCUI.background);
         g_backcolour2 = window.GetColourCUI(ColourTypeCUI.active_item_frame);
         g_backcolour3 = window.GetColourCUI(ColourTypeCUI.selection_background);
-		g_backcolour4 = RGB(90,90,90);
+        g_backcolour4 = RGB(90, 90, 90);
     }
 }
 
