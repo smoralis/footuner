@@ -1,6 +1,9 @@
 //js tabs_qp
 
 
+const MF_STRING = 0x00000000;
+const MF_CHECKED = 0x00000008;
+
 // Use with GdiDrawText()
 const DT_CENTER = 0x00000001;
 const DT_VCENTER = 0x00000004;
@@ -68,17 +71,20 @@ function RGB(r, g, b) {
 get_font();
 get_colours();
 
-let presets_nums = [[01, 20], [21, 40], [41, 60], [61, 80],[81, 100]];
+let presets_nums = [[01, 20], [21, 40], [41, 60], [61, 80], [81, 100]];
 
 function on_paint(gr) {
     gr.FillSolidRect(0, 0, ww, wh, g_backcolour);
 
-    gr.FillSolidRect(5, 5, bw - 5, bh, g_backcolour4);
-	gr.GdiDrawText("<<", g_font, g_hot ? g_textcolour_hl : g_textcolour, 5, 0, bw - 5, bh, DT_VCENTER | DT_CENTER | DT_WORDBREAK | DT_CALCRECT | DT_NOPREFIX);
-	gr.GdiDrawText(presets_nums[active][0], g_font, g_textcolour, 5, bh, bw - 5, bh*2, DT_VCENTER | DT_CENTER | DT_WORDBREAK | DT_CALCRECT | DT_NOPREFIX);
-    gr.FillSolidRect(ww- bw, 5, bw - 5, bh, g_backcolour4);
-	gr.GdiDrawText(">>", g_font, g_hot ? g_textcolour_hl : g_textcolour, ww-bw, 0, bw - 5, bh, DT_VCENTER | DT_CENTER | DT_WORDBREAK | DT_CALCRECT | DT_NOPREFIX);
-    gr.GdiDrawText(presets_nums[active][1], g_font, g_textcolour, ww - bw, bh, bw - 5, bh*2, DT_VCENTER | DT_CENTER | DT_WORDBREAK | DT_CALCRECT | DT_NOPREFIX);
+    gr.FillSolidRect(5, 0, bw - 5, bh - 5, g_backcolour4);
+    gr.GdiDrawText("P", g_font, g_textcolour_hl, 5, 0, bw - 5, bh - 5, DT_VCENTER | DT_CENTER | DT_WORDBREAK | DT_CALCRECT | DT_NOPREFIX);
+
+    gr.FillSolidRect(5, bh, bw - 5, bh, g_backcolour4);
+    gr.GdiDrawText("<<", g_font, g_hot ? g_textcolour_hl : g_textcolour, 5, bh, bw - 5, bh, DT_VCENTER | DT_CENTER | DT_WORDBREAK | DT_CALCRECT | DT_NOPREFIX);
+    gr.GdiDrawText(presets_nums[active][0], g_font, g_textcolour, 5, bh * 2, bw - 5, bh, DT_VCENTER | DT_CENTER | DT_WORDBREAK | DT_CALCRECT | DT_NOPREFIX);
+    gr.FillSolidRect(ww - bw, bh, bw - 5, bh, g_backcolour4);
+    gr.GdiDrawText(">>", g_font, g_hot ? g_textcolour_hl : g_textcolour, ww - bw, bh, bw - 5, bh, DT_VCENTER | DT_CENTER | DT_WORDBREAK | DT_CALCRECT | DT_NOPREFIX);
+    gr.GdiDrawText(presets_nums[active][1], g_font, g_textcolour, ww - bw, bh * 2, bw - 5, bh, DT_VCENTER | DT_CENTER | DT_WORDBREAK | DT_CALCRECT | DT_NOPREFIX);
 
     this[p_array[active]].Move(bw, 0, ww - bw * 2, wh);
     this[p_array[active]].Show(true);
@@ -88,17 +94,37 @@ function on_size() {
     ww = window.Width;
     wh = window.Height;
     bw = (ww / 20) / 2;
-	bh = wh / 3;
+    bh = wh / 3;
 }
 
 function on_mouse_lbtn_up(x, y) {
-    if (x < bw && active != 0) {
+    if (x < bw && y < bh) {
+        let _menu = window.CreatePopupMenu();
+        for (var i = 0; i < presets_nums.length; i++) {
+            _menu.AppendMenuItem(i == active ? MF_STRING | MF_CHECKED : MF_STRING, i + 1, "Presets: " + presets_nums[i].join("-"));
+        }
+
+        let idx = _menu.TrackPopupMenu(0, bh);
+
+        switch (true) {
+        case idx == 0:
+            break;
+        default:
+            active = idx - 1;
+            window.SetProperty("active", active);
+            hide_panels();
+            window.Repaint();
+            break;
+        }
+    }
+
+    if (x < bw && active != 0 && y > bh && y < bh * 2) {
         active = active - 1;
         window.SetProperty("active", active);
         hide_panels();
         window.Repaint();
     }
-    if (x > ww - bw && active != p_array.length - 1) {
+    if (x > ww - bw && active != p_array.length - 1 && y > bh && y < bh * 2) {
         active = active + 1;
         window.SetProperty("active", active);
         hide_panels();
@@ -108,7 +134,7 @@ function on_mouse_lbtn_up(x, y) {
 
 function on_mouse_move() {
     if (!g_hot) {
-       g_hot = true;
+        g_hot = true;
         window.SetCursor(IDC_HAND);
         window.Repaint();
     }
