@@ -128,26 +128,26 @@ function on_mouse_lbtn_up(x, y) {
         hide_panels();
         window.Repaint();
     }
-	
-	if (x > bpn && x < ww - bpn) {
-		let _menu = window.CreatePopupMenu();
-		for (var i = 0; i < p_array.length; i++) {
-			_menu.AppendMenuItem(i == active ? MF_STRING | MF_CHECKED : MF_STRING, i+1, p_array[i].split("_").pop());
-		}
-		
-		   let idx = _menu.TrackPopupMenu(bpn*1.5, 30);
 
-    switch (true) {
-    case idx == 0:
-        break;
-    default:
-	active = idx-1;
-        window.SetProperty("active", active);
-        hide_panels();
-        window.Repaint();
-        break;
+    if (x > bpn && x < ww - bpn) {
+        let _menu = window.CreatePopupMenu();
+        for (var i = 0; i < p_array.length; i++) {
+            _menu.AppendMenuItem(i == active ? MF_STRING | MF_CHECKED : MF_STRING, i + 1, p_array[i].split("_").pop());
+        }
+
+        let idx = _menu.TrackPopupMenu(bpn * 1.5, 30);
+
+        switch (true) {
+        case idx == 0:
+            break;
+        default:
+            active = idx - 1;
+            window.SetProperty("active", active);
+            hide_panels();
+            window.Repaint();
+            break;
+        }
     }
-	}
 }
 
 function on_mouse_move() {

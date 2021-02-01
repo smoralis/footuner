@@ -30,11 +30,13 @@ function save_fcl() {
 
 function switch_fcl() {
     let _menu = window.CreatePopupMenu();
-    _menu.AppendMenuItem(MF_STRING, 1, "Layout 1 (light mode)");
-    _menu.AppendMenuItem(MF_STRING, 2, "Layout 2 (light mode)");
-    _menu.AppendMenuItem(MF_STRING, 3, "Layout 3 (light mode)");
-	_menu.AppendMenuItem(MF_STRING, 4, "Layout 4 (dark mode)");
-	_menu.AppendMenuItem(MF_STRING, 5, "Layout 5 (dark mode)");
+    _menu.AppendMenuItem(current_layout == 1 ? MF_STRING | MF_CHECKED : MF_STRING, 1, "Layout 1 (light mode)");
+    _menu.AppendMenuItem(current_layout == 2 ? MF_STRING | MF_CHECKED : MF_STRING, 2, "Layout 2 (light mode)");
+    _menu.AppendMenuItem(current_layout == 3 ? MF_STRING | MF_CHECKED : MF_STRING, 3, "Layout 3 (light mode)");
+	_menu.AppendMenuItem(current_layout == 4 ? MF_STRING | MF_CHECKED : MF_STRING, 4, "Layout 4 (dark mode)");
+	_menu.AppendMenuItem(current_layout == 5 ? MF_STRING | MF_CHECKED : MF_STRING, 5, "Layout 5 (dark mode)");
+	_menu.AppendMenuItem(current_layout == 6 ? MF_STRING | MF_CHECKED : MF_STRING, 6, "Layout 6 (light mode)");
+	_menu.AppendMenuItem(current_layout == 7 ? MF_STRING | MF_CHECKED : MF_STRING, 7, "Layout 7 (dark mode)");
 
     let idx = _menu.TrackPopupMenu(0, bs);
 

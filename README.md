@@ -4,7 +4,7 @@ A foobar2000 skin/theme designed for internet streams.
 
 Search and import streams from:
 
-tunein.com (https://tunein.com/)
+Tunein (https://tunein.com/)
 
 Community Radio Browser (http://www.radio-browser.info/gui/#!/) 
 
@@ -12,8 +12,9 @@ Live365 (https://live365.com/)
 
 # Screenshots
 
-5 Layout modes (switchable on-the fly).
-
+5 Radio Layout modes (Layouts 1 to 5)
+2 Recordings Edit mode (Layouts 6 & 7)
+(switchable on-the fly).
 
 ![Layout1](/layout1.png)
 
@@ -24,6 +25,10 @@ Live365 (https://live365.com/)
 ![Layout4](/layout4.png)
 
 ![Layout5](/layout5.png)
+
+![Layout6](/layout6.png)
+
+![Layout7](/layout7.png)
 
 # Installation
 
@@ -60,3 +65,4 @@ Double click the MyHistory Panel to save track details.
 
 Streamripper
 
+mp3DirectCut

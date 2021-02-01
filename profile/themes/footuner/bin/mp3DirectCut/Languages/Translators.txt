@@ -1,0 +1,497 @@
+﻿[mp3DirectCut Language File]
+
+UTF-8=1
+Language: English
+Native: English
+Composer: Martin Pesch
+Version: 2.31
+Update: 2020-10-23
+
+
+
+IMPORTANT INFORMATIONS FOR TRANSLATORS
+
+This is the english template file. If you want to write or update a translation,
+please note these things:
+
+You should contact the author first, to make sure that nobody else is already working
+on the same thing. Otherwise it cannot be guaranted that your translation will be published.
+
+The "Composer" field above should contain your real name (also together with an email
+address or website if you want).
+
+Updates of existing files should always base on the ones of the latest distribution.
+Some fields may be slightly adapted a newer program versions.
+
+NEW: Please add the correct native label of your language to the new "Native:" field in the
+header if not already present. The file format is now UTF-8, the old ACSII format still works.
+
+
+
+CHANGES AND ADDITIONS
+
+Version 2.18:
+   new: cfg009, cfg015, cfg027, cfg045
+   changed: dlg007
+
+Version 2.19:
+   new: men058
+
+Version 2.20:
+   changed: win005, men030, men035, ttp010, dlg068, cfg050, men019
+   new: cfg060, cfg061
+
+Version 2.21:
+   removed: cfg011
+   changed: cfg006
+   new: win024, cfg007, cfg062-cfg070
+
+Version 2.23:
+   new: men062, cfg001, cfg071-cfg072
+
+Version 2.24:
+   changed: dlg013, dlg073-dlg076, men022
+   new: men038, men039, win035
+
+Version 2.25:
+   changed: ttp21, ttp22, msg038
+   new: msg044, msg045, men014
+
+Version 2.26:
+   removed: msg042
+   changed: msg030, dlg030
+   new: men047, men074, msg046, dlg069
+
+Version 2.27:
+   changed: msg032, men064, men065, dlg013, msg039
+
+Version 2.29:
+   new: cfg073, cfg074, cfg075
+
+Version 2.30:
+   removed: dlg036
+   changed: dlg040
+   new: dlg091
+
+Version 2.31:
+   removed: dlg091
+   changed: msg037
+
+
+
+TRANSLATION AND SHORTCUT NOTES
+
+You should not translate technical terms like "Cue sheet", "header", "frame"...
+if in your language the english expression is used.
+
+Be sure to keep the original keyboard shortcuts for Ctrl/Shift/Alt combinations.
+
+In the menus you can choose the fast access characters (prefixed by &) as you like.
+Each underlined char in a menu should appear only once.
+
+Example:
+&Open	Ctrl+O
+&Open can be changed to Op&en.  Ctrl+O must not be changed.
+
+Comments and explanation text (like this) will be ignored.
+Missing items will be replaced by the default english text.
+
+
+
+MENUS
+
+men000=&File
+men001=&Edit
+men002=S&pecial
+men003=&List
+men004=&Settings
+men005=&?
+# Unused: 006-009
+
+men010=&Open...	Ctrl+O
+men011=&Close	Ctrl+F4
+men012=&Save complete audio...	Ctrl+W
+men013=Save s&election...	Ctrl+E
+men014=Save re-encode&d...
+men015=Save spli&t...	Ctrl+T
+men016=Save P&roject file/Cue sheet	Ctrl+S
+men017=Save &Project file/Cue sheet as...
+men018=E&xit	Alt+F4
+
+men019=Simple &fade to/from position	Ctrl+F
+men020=Remove selected edit points
+men021=&Level...	Ctrl+G
+men022=File &info and tag &ID3v1...	Ctrl+I
+men023=&Undo	Ctrl+Z
+men024=&Remove selection	Ctrl+R
+men025=Select &all	Ctrl+A
+men026=Nor&malize...	Ctrl+M
+men027=&Pause detection...	Shift+Ctrl+P
+men028=Cr&op	Ctrl+H
+men029=Check for &re-syncs
+men030=Cu&t (clipboard)	Ctrl+X
+men031=&Copy	Ctrl+C
+men032=&Paste	Ctrl+V
+men033=S&elect current part	Ctrl+K
+men034=&Names and part properties...	Ctrl+N
+men035=Set Cue flag for all pure split points
+men036=Auto &crop	Shift+Ctrl+C
+men037=Keep date on creating &new file
+men038=Set Cue flags (selected range / all)
+men039=Remove Cue flags (selected range / all)
+# Unused: 040-041
+
+men042=&Auto Cue...	Shift+Ctrl+A
+men043=&Save Cue sheet and edit with &Notepad
+men044="&High speed" recording
+men045=&Load Cue sheet over current audio file
+men046=T&wo-stage fade	Shift+Ctrl+F
+men047=&Mute cut	Shift+Ctrl+M
+# Unused: 048
+
+men049=&Loop play selection	F4
+men050=(No areas)
+men051=Cut
+men052=Level
+men053=Cue
+
+men054=&Configure...	F11
+men055=&Big timer
+men056=Show &miliseconds
+men057=Show &dB scale
+men058=Show t&imeline
+men059=Enable Mar&gin button (VU)
+men060=Show b&itrate graph on VBR
+men061=Big shows &relative times
+men062=Big shows &total time
+men063=&Keep date on overwriting source file
+men064=&Manual (english)	F1
+men065=&FAQ (english)
+men066=&About
+men067=Use 'T&OC' correction on VBR
+men068=&New program window
+men069=&Batch processing...	Ctrl+B
+men070=MPEG graph &level
+men071=&Higher	Num +
+men072=&Lower	Num  -
+men073=&Default	Num  x
+men074=Ch&aracter encoding
+
+
+
+MAIN WINDOW: GROUPS, BUTTONS, EDIT FIELD
+
+win000=Nav
+win001=Edit
+win002=Audio
+win003=&In
+win004=&Out
+win005=&Cut/Cue
+# Unused: 006
+
+win007=&Edit
+win008=Set &begin
+win009=Set e&nd
+win010=Rew
+win011=&Stop
+win012=&Play
+win013=&Rec
+win014=Margin
+# Unused: 015-019
+
+win020=Total
+win021=Now
+win022=Selection
+win023=Part
+win024=Remaining time
+win025=Layer 2 graph shows limited audio information
+win026=Recording time
+win027=Buffer
+win028= Press Play to start recording...
+win029=Writing
+win030= Press 'Set begin' to set cues
+win031=Fast Play
+
+win032=Save: 
+win033=Keep: 
+win034=Play decoder: 
+# Note for 032-034: Statusbar, short text needed; blank at the end
+
+win035=Note: No level adjustment on AAC
+
+
+TOOLTIPS
+
+ttp000=Skip back large step   [Page up]
+ttp001=Skip back small step   [Left]
+ttp002=Skip forward small step   [Right]
+ttp003=Skip forward large step   [Page down]
+ttp004=Go to previous edit range   [Ctrl+Left]
+ttp005=Go to next edit range   [Ctrl+Right]
+ttp006=Go to beginning of selection   [Up]
+ttp007=Go to end of selection   [Down]
+ttp008=Zoom in   [I]
+ttp009=Zoom out   [O]
+ttp010=Delete selected range / create Cue or edit point   [Del or c]
+# Unused: 011
+ttp012=Restore range from highlighted cut / remove edit point (not possible on pasted ranges!)   [E]
+ttp013=Selection beginning = current position   [B]
+ttp014=Selection end = current position   [N]
+ttp015=Prelisten region TO BEGINNING of selection   [F5]
+ttp016=Prelisten region FROM BEGINNING of selection   [F6]
+ttp017=Prelisten region TO END of selection / Fast Play: slower   [F7]
+ttp018=Prelisten region FROM END of selection / Fast Play: faster   [F8]
+ttp019=Prelisten selection AS CUT   [F9]
+ttp020=Rewind   [Home]
+ttp021=Stop play or record   [Space or S]
+ttp022=Play from cursor or start recording   [Space or P]
+ttp023=Initialize recording new file   [R]
+ttp024=Shows dB level margin (left/right or mono), push resets   [Back]
+ttp025=Volume   [Alt+Up/Down or ,/.]
+ttp026=Margin reset   [BS]
+ttp027=Go to track end   [End]
+ttp028=Move selection beginning one frame left   [1]
+ttp029=Move selection beginning one frame right   [2]
+ttp030=Move selection end one frame left   [3]
+ttp031=Move selection end one frame right   [4]
+ttp032=Move complete selection one frame left   [5]
+ttp033=Move complete selection one frame right   [6]
+ttp034=Trim left side of current cut to left   [Ctrl+1]
+ttp035=Trim left side of current cut to right   [Ctrl+2]
+ttp036=Trim right side of current cut to left   [Ctrl+3]
+ttp037=Trim right side of current cut to right   [Ctrl+4]
+ttp038=Move current cue to left   [Ctrl+5 / Alt+Left / right mouse button drag]
+ttp039=Move current cue to right   [Ctrl+6 / Alt+Right / right mouse button drag]
+
+
+MESSAGES, DIALOG TITLES
+
+msg001=Open file
+msg002=Create audio file
+# Unused: 003
+msg004=Save Project file or Cue sheet
+msg005=Record base filename
+msg006=Error
+msg007=Warning
+msg008=Not possible
+msg009=Please note
+msg010=File open failed
+msg011=Audio file
+msg012=Project file
+msg013=Could not create/write to file.
+msg014=Could not replace source file. Saved as:
+msg015=While saving %d file(s) %d re-sync(s) occured.
+msg016=Selection range seems to be invalid.
+msg017=Please stop play/rec first.
+msg018=Unsupported file type.
+msg019=Changes unsaved. Save modified Project?
+msg020=No selection or selection too short.
+msg021=Really close and replace the source file?
+msg022=Can't change the level of Layer II.
+msg023=Too many files. Maximum:
+msg024=No active edit range (cut/cue/level).
+msg025=No edit range present.
+msg026=Reload Cue sheet?
+msg027=Restart program?
+msg028=Don't show this message again
+msg029=Level of AAC cannot be changed.
+
+msg030=mpglib installation instruction:##  - Download the free "mpglib.dll" binary#  - It's available on the mp3DirectCut homepage#  - Extract the file into the program folder#  - Menu > Settings > Configure > Decoder#  - Select "mpglib.dll"
+msg031=Could not open wave/audio device
+msg032=Lame MP3 encoder installation instruction:##  - Download the free "Lame_enc.dll" (32 bit!)#  - The link can be found on the mp3DirectCut homepage#  - Extract the file into the program folder#  - Menu > Settings > Configure > Encoder#  - Select "Lame_enc.dll" and adjust settings
+msg033=This "incredible breakthrough" lets you grab your old 33 rpm longplay records with 45 rpm (1.35x). Other grabbing speeds (0.5-2.0x) are possible: Adjust original and recording speeds in the fields.##Encoding with at least 44.1 kHz is recommended.##For best results this feature is not recommended at all, because of the resampling distortions.
+msg034=PROJECT FILES AND CUE SHEETS##Please note that Project and Cue sheet files do NOT contain any audio data.##A Project file stores all edit informations (cuts etc.) while it only links to the corresponding audio files. It usually cannot be opened by other programs. A Cue sheet contains track names and index times and can be read by some programs (e.g. players, CD burn programs, audio editors).##AND: The shortcut Ctrl+S saves the project, not the audio!
+msg035=AUDIO GRAPH - IMPORTANT BASICS##Please note that mp3DirectCut does not show the real waveform audio data in the edit graph.##What you see is direct MPEG audio data which contains only higher frequencies in most cases. It can also be too high or too low and sometimes show nothing at all.##Use the edit graph for navigation and editing. The height can be adjusted under "Settings". The correct audio level is shown while play in the vu meter on the right.
+# Unused: 036
+msg037=Audio parameters do not match.#Same samplerate, channel mode,#MPEG and CRC needed.
+msg038=CUE SHEETS AND VBR##Opening or saving a Cue sheet for an MP3 with VBR (variable bitrate) can take some seconds. The complete audio file must be scanned to get the correct cue positions.##The times shown in mp3DirectCut slightly differ from the real cue times. It's recommended to activate the "Use 'TOC' correction on VBR" option.##On AAC files a cue position correction is not possible.
+msg039=BATCH PROCESSING NOTES##The rules for Autocue, Pause detection and Split must be set in the normal program environment.##Splitting multiple files (Pause detection, Autocue) requires a variable for generating unique filenames: %F is highly recommended! It is set by default and can be adjusted in dialog for Save split.##Generally be careful on processing multiple files and often check the results.
+# Unused: 040
+msg041=The length of the audio file has been changed, or the audio contains multiple sources.##The cues will have different positions in the original audio file.##Proceed?##(Note: To associate the Cue sheet to the cut version of the audio, save the audio first and then the Cue sheet.)
+# Unused: 042
+msg043=AAC decoder installation instruction:##  - Find and download the free "libfaad2.dll"#  - Extract the file into the program folder#  - Runtime Library MSVC90 may also be needed
+msg044=Append file(s)?##Select "No" to open normally.##Note: Drop above or below the MPEG graph to skip this append option.
+msg045=This function saves the complete audio re-encoded.##The current recording encoder settings for Lame or ACM are used. Adjust the settings in the Encoder tab of the preferences window.##Please note: Unlike direct saving the audio quality may decrease on re-encoding depending on the settings.
+msg046=Convert characters (in case of wrong appearance)?
+
+
+CONFIGURATION WINDOW
+
+cfg001=Decoder
+cfg002=Operation
+cfg003=Misc
+cfg004=Devices
+cfg005=Encoder
+cfg006=Folders
+cfg007=Layout
+# Unused: 008
+
+cfg009=Max. undo steps:
+cfg010=MPEG play decoder [Ctrl+D]
+# Unused: 011
+cfg012=Wave out device
+cfg013=Maximum wave buffer size:
+cfg014=Max. frames/buffer (fast...reliable):
+cfg015=Max. number of recent files:
+cfg016=[User presets]
+cfg017=Add
+cfg018=Delete
+cfg019=High quality
+cfg020=Wave in device
+cfg021=Beep on reaching peak (Asterisk)
+cfg022=Encoding path and base filename
+cfg023=Add date and time
+cfg024=Append audio
+cfg025=Enable
+cfg026=not found
+cfg027=Configuration storage
+cfg028=Navigation / Prelisten
+cfg029=skips
+cfg030=Mouse selection method
+cfg031=Left = set begin / Right = set end
+cfg032=Left = new + drag / Right = set nearest
+cfg033=Language
+cfg034=Language appears after program restart
+cfg035=frame(s)
+cfg036=Cut prelisten time (1/10 sec):
+cfg037=Colors / Graph
+cfg038=Background
+cfg039=MPEG level graph
+cfg040=Cursor, big timer
+cfg041=Selection
+cfg042=Edits (cut, cue, level)
+cfg043=Active edit part / names
+cfg044=VU meter
+cfg045=Force portable/local settings (needs write access in program folder)
+cfg046=Maximum height of big time display:
+cfg047=Use higher priority
+cfg048=Warn of unsaved changes
+cfg049=Show tooltips
+cfg050=Show all warnings/notes again
+cfg051=Button layout (restart)
+cfg052=Warn of overwrite on save
+cfg053=Uninstall settings files
+cfg054=Explore settings folder
+cfg055=Standard working directory
+cfg056=Use on save
+cfg057=Text buttons
+cfg058=Text buttons - Nav left
+cfg059=Text buttons - Slim
+cfg060=Misc / Edit
+cfg061=Bottom level - used by Auto crop, Simple fade, Two-stage fade, fade in/out:
+cfg062=Window background
+cfg063=Bright symbols
+cfg064=Dark symbols
+cfg065=Classic symbols
+cfg066=Flat window, own color
+cfg067=Default dark theme
+cfg068=Default bright theme
+cfg069=Limit recording time (min.):
+cfg070=Continue in new file
+cfg071=External demuxing
+cfg072=Use ffmpeg to demultiplex AAC tracks from MP4 or M4A files. The AAC track will be copied to the same folder and opened. Name (with path if needed) of the ffmpeg executable (empty to disable MP4 support):
+cfg073=Level activated recording	Shift+R
+cfg074=Threshold:
+cfg075=Pause after (seconds):
+
+FUNCTION DIALOGS
+
+dlg000=&OK
+dlg001=&Cancel
+dlg002=&Close
+dlg003=Yes
+dlg004=No
+dlg005=Defaults#Restore default values on this page?
+dlg006=Saving data...
+dlg007=Close save window on messages
+dlg008=Configuration
+# Unused: 009
+
+dlg010=Split file
+dlg011=%N = Track (cue/cut) number#%T = Track (cue/cut) title#%A = Track (cue/cut) artist#%C = Cue sheet (album) title#%D = Cue sheet (album) artist#%F = Name of (first) source file#%M = Maximum track number##Example: %D (%C %N) - %T
+dlg012=IMPORTANT: Always use %N if no other information is available. Otherwise the program can't write different files.##%T, %A, %C and %D have only effect if names are present (loaded with a Cue sheet or entered).##If ID3v1 creation is enabled in the main settings, the tag is saved to each file. The option here is for adjusting the tag by the fields.
+dlg013=NOTE: Split saves every region beginning with a cue (!) to a new file. So make sure that the cue flag at every split position is set (dotted line).##This function is designed for separating into different audio tracks. It is not recommended for split and join purposes.
+dlg014=Destination folder
+dlg015=Filename creation
+dlg016=%N begins with
+dlg017=Create ID3v&1.1 tags with %T, %A (or %D), %C, %N if present
+dlg018=O&verlap at split points - seconds:
+dlg019=Copy ID3v&2 (Warning: Naming fields not used!)
+dlg020=File information
+dlg021=Create/use ID3v&1 tag
+dlg022=Get names from current cue
+dlg023=Title
+dlg024=Artist
+dlg025=Album
+dlg026=Year
+dlg027=Comment
+dlg028=Save options
+# Unused: 029
+dlg030=Total audio size:#First audio frame at:#Current position:#Current bitrate:#Average bitrate:#Size of current frame:#Average frame size:#Xing VBR header:#Encoder ID:#ID3v2 header:#Current file:
+dlg031=Track No.
+dlg032=Genre
+dlg033=MPEG header bits
+dlg034=Enable modifying
+
+dlg035=Normalize level
+# Unused: 036
+dlg037=St&op
+dlg038=Peak found:
+dlg039=Level change:
+
+dlg040=Change level
+dlg041=from
+dlg042=to
+dlg043=Fade &in
+dlg044=Fade o&ut
+dlg045=&Flat
+dlg046=&Lock sliders
+dlg047=&Silence
+dlg048=Bottom level:   -
+
+dlg049=Create/keep VBR/Info header (recommended on VBR)
+
+dlg050=Pause detection
+dlg051=This function seeks for pauses and sets cues at the pause ends. For good results adjust the level and duration thresholds carefully. Analyzing may take a while, because the data must be internally decoded.
+# Unused: 052
+dlg053=Level
+dlg054=Duration
+dlg055=Found
+dlg056=&Start
+# Unused: 057
+dlg058=After a pause detection skip (sec)
+dlg059=Offset
+# Unused: 060
+
+dlg061=Cut pause
+dlg062=Names and part properties
+dlg063=Part
+
+dlg064=Auto Cue
+dlg065=Set a Cue every (min:sec)
+dlg066=Keep ID3v2 tag on normal save (without duration info)
+dlg067=Keep encoder data in VBR/Info header
+dlg068=Note: The 'Bottom level' value is also used by Simple fade and Auto crop. For creating fades it's recommended to use edit points (grey handles) instead of this dialog.
+dlg069=Cue (Ctrl-Q)
+
+dlg070=File
+dlg071=Size
+dlg072=Modified
+dlg073=Source
+dlg074=Action
+dlg075=Destination
+dlg076=Results
+dlg077=Only save
+dlg078=Join to file:
+dlg079=Seconds from beginning / from end:
+dlg080=Select folder / current folder
+dlg081=Overwrite originals
+dlg082=Processing file:
+dlg083=Clipboard error
+dlg084=Open failed:
+dlg085=File exists:
+dlg086=User stopped
+dlg087=Split save aborted:
+dlg088=Minimum length of last part
+dlg089=Create time names
+dlg090=Limit length
