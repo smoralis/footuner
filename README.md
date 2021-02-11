@@ -10,6 +10,8 @@ Community Radio Browser (http://www.radio-browser.info/gui/#!/)
 
 Live365 (https://live365.com/)
 
+Icecast (https://dir.xiph.org/)
+
 # Screenshots
 
 5 Radio Layout modes (Layouts 1 to 5)

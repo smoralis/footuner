@@ -7,6 +7,7 @@ include(fb.ProfilePath + 'themes\\footuner\\bin\\he.js');
 include(fb.ProfilePath + 'themes\\footuner\\js\\tunein.js');
 include(fb.ProfilePath + 'themes\\footuner\\js\\crb.js');
 include(fb.ProfilePath + 'themes\\footuner\\js\\live365.js');
+include(fb.ProfilePath + 'themes\\footuner\\js\\icecast.js');
 
 const ffprobe_exe = fb.ProfilePath + "themes\\footuner\\bin\\ffprobe.exe";
 const jq_exe = fb.ProfilePath + "themes\\footuner\\bin\\jq.exe";
@@ -46,6 +47,11 @@ function buttonss() {
         }, (x, y) => {
             live365_main_menu();
         }, 'Live365 Search');
+    buttons.buttons.icecast = new _button(bs * 6, 0, bs, bs, {
+            normal: icecast_ico
+        }, (x, y) => {
+            icecast_main_menu();
+        }, 'Icecast Search');
 }
 
 let xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
@@ -148,7 +154,7 @@ function on_playback_stop() {
 
 function on_size() {
     panel.size();
-    bs = panel.w / 6;
+    bs = panel.w / 8;
     buttonss();
 }
 
@@ -177,6 +183,10 @@ function ml_get_ids() {
         }
         if (f.MetaFind("STREAM_LIVE365_MOUNT_ID") != -1) {
             let value = f.MetaValue(f.MetaFind("STREAM_LIVE365_MOUNT_ID"), 0);
+            ml_arr.push(value);
+        }
+        if (f.MetaFind("STREAM_ID_CRC32") != -1) {
+            let value = f.MetaValue(f.MetaFind("STREAM_ID_CRC32"), 0);
             ml_arr.push(value);
         }
     }

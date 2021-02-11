@@ -10,18 +10,9 @@ let crb_tags_file = fb.ProfilePath + 'themes\\footuner\\crb_tags.json';
 let crb_stats_file = fb.ProfilePath + 'themes\\footuner\\crb_stats.json';
 let crb_back;
 let crb_selection;
-let crb_name = [];
-let crb_url_resolved = [];
-let crb_stationuuid = [];
-let crb_clickcount = [];
-let crb_image = [];
-let crb_country = [];
-let crb_language = [];
-let crb_tags = [];
-
+let crb_stations_results = [];
 
 function crb_main_menu() {
-
     statustext = "CRB Main Menu....  ";
     window.NotifyOthers("tunein", statustext);
     let _menu = window.CreatePopupMenu();
@@ -129,10 +120,6 @@ function crb_main_menu() {
         } catch (e) {
             statustext = "Search Canceled.";
             window.NotifyOthers("tunein", statustext);
-            let n_timer = setTimeout(() => {
-                    statustext = "Idle.";
-                    window.NotifyOthers("tunein", statustext);
-                }, 2000);
         }
         break;
     case idx == 2:
@@ -185,10 +172,6 @@ function crb_main_menu() {
         } catch (e) {
             statustext = "Search Canceled.";
             window.NotifyOthers("tunein", statustext);
-            let n_timer = setTimeout(() => {
-                    statustext = "Idle.";
-                    window.NotifyOthers("tunein", statustext);
-                }, 2000);
         }
         break;
     case idx >= 1000 && idx < 1999:
@@ -208,10 +191,6 @@ function crb_main_menu() {
         } catch (e) {
             statustext = "Search Canceled.";
             window.NotifyOthers("tunein", statustext);
-            let n_timer = setTimeout(() => {
-                    statustext = "Idle.";
-                    window.NotifyOthers("tunein", statustext);
-                }, 2000);
         }
         break;
     case idx >= 2000:
@@ -236,46 +215,43 @@ function crb_process_menu(selection, title) {
                 statustext = "Menu of .... " + selection;
                 window.NotifyOthers("tunein", statustext);
                 let json_data = _jsonParse(xmlhttp.responseText);
-                //console.log(json_data);
+
                 let counter = 0;
 
-                crb_name = [];
-                crb_url_resolved = [];
-                crb_stationuuid = [];
-                crb_clickcount = [];
-                crb_image = [];
-                crb_country = [];
-                crb_language = [];
-                crb_tags = [];
+                crb_stations_results = [];
 
                 for (let i = 0; i < json_data.length; i++) {
-                    crb_name.push(json_data[i].name.substring(0, 50));
-                    crb_url_resolved.push(json_data[i].url_resolved);
-                    crb_stationuuid.push(json_data[i].stationuuid);
-                    crb_clickcount.push(json_data[i].clickcount);
-                    crb_image.push(json_data[i].favicon);
-                    crb_country.push(json_data[i].country);
-                    crb_language.push(json_data[i].language);
-                    crb_tags.push(json_data[i].tags);
+                    crb_stations_results.push({
+                        name: json_data[i].name.substring(0, 50),
+                        url: json_data[i].url_resolved,
+                        stationuuid: json_data[i].stationuuid,
+                        clickcount: json_data[i].clickcount,
+                        logo: json_data[i].favicon,
+                        country: json_data[i].country,
+                        language: json_data[i].language,
+                        tags: json_data[i].tags,
+                        bitrate: json_data[i].bitrate,
+                        codec: json_data[i].codec,
+                    });
                 }
 
                 let _menu = window.CreatePopupMenu();
 
-                _menu.AppendMenuItem(MF_GRAYED, 0, (title ? title : "") + " (Total : " + crb_name.length + ")" + " 0+");
+                _menu.AppendMenuItem(MF_GRAYED, 0, (title ? title : "") + " (Total : " + crb_stations_results.length + ")" + " 0+");
                 _menu.AppendMenuSeparator();
 
                 for (let i = 0; i < 100; i++) {
-                    if (i < crb_name.length) {
+                    if (i < crb_stations_results.length) {
                         let n = i / 35;
                         if ((n != Math.floor(n) == false) && (n != 0)) {
                             _menu.AppendMenuItem(MF_GRAYED | MF_MENUBARBREAK, i + 9000, " (+)");
                             _menu.AppendMenuSeparator();
                         }
-                        _menu.AppendMenuItem(ml_arr.includes(crb_stationuuid[i]) ? MF_STRING | MF_CHECKED : MF_STRING, i + 1, _menuEscape(crb_name[i]) + ' (' + crb_clickcount[i] + ')');
+                        _menu.AppendMenuItem(ml_arr.includes(crb_stations_results[i].stationuuid) ? MF_STRING | MF_CHECKED : MF_STRING, i + 1, _menuEscape(crb_stations_results[i].name) + ' (' + crb_stations_results[i].clickcount + ') [' + crb_stations_results[i].bitrate + " " + crb_stations_results[i].codec + ']');
                     }
                 }
 
-                if (crb_name.length > 100) {
+                if (crb_stations_results.length > 100) {
                     _menu.AppendMenuSeparator();
                     _menu.AppendMenuItem(MF_STRING, 10000, 'Next 100 stations');
                 }
@@ -300,8 +276,8 @@ function crb_process_menu(selection, title) {
                     crb_process_menu_next_prev(counter, title);
                     break;
                 default:
-                    crb_count(crb_stationuuid[idx - 1]);
-                    crb2mtag(crb_url_resolved[idx - 1], crb_name[idx - 1], crb_stationuuid[idx - 1], crb_image[idx - 1], crb_country[idx - 1], crb_language[idx - 1], crb_tags[idx - 1]);
+                    crb_count(crb_stations_results[idx - 1].stationuuid);
+                    crb2mtag(crb_stations_results[idx - 1]);
                     break;
                 }
             }
@@ -313,24 +289,24 @@ function crb_process_menu(selection, title) {
 function crb_process_menu_next_prev(counter, title) {
     let _pmenu = window.CreatePopupMenu();
 
-    _pmenu.AppendMenuItem(MF_GRAYED, 0, (title ? title : "") + " (Total : " + crb_name.length + ") " + (counter * 100) + '+');
+    _pmenu.AppendMenuItem(MF_GRAYED, 0, (title ? title : "") + " (Total : " + crb_stations_results.length + ") " + (counter * 100) + '+');
     _pmenu.AppendMenuSeparator();
 
     let x;
 
     for (let i = (counter * 100); i < (counter * 100) + 100; i++) {
         x = i;
-        if (i < crb_name.length) {
+        if (i < crb_stations_results.length) {
             let n = (i - (counter * 100)) / 35;
             if ((n != Math.floor(n) == false) && (n != 0)) {
                 _pmenu.AppendMenuItem(MF_GRAYED | MF_MENUBARBREAK, i + 9000, " (+)");
                 _pmenu.AppendMenuSeparator();
             }
-            _pmenu.AppendMenuItem(ml_arr.includes(crb_stationuuid[i]) ? MF_STRING | MF_CHECKED : MF_STRING, i + 1, _menuEscape(crb_name[i]) + ' (' + crb_clickcount[i] + ')');
+            _pmenu.AppendMenuItem(ml_arr.includes(crb_stations_results[i].stationuuid) ? MF_STRING | MF_CHECKED : MF_STRING, i + 1, _menuEscape(crb_stations_results[i].name) + ' (' + crb_stations_results[i].clickcount + ') [' + crb_stations_results[i].bitrate + " " + crb_stations_results[i].codec + ']');
         }
     }
 
-    if (crb_name.length > x) {
+    if (crb_stations_results.length > x) {
         _pmenu.AppendMenuSeparator();
         _pmenu.AppendMenuItem(MF_STRING, 10000, 'Next 100 stations');
 
@@ -365,8 +341,8 @@ function crb_process_menu_next_prev(counter, title) {
         crb_process_menu_next_prev(counter - 1, title);
         break;
     default:
-        crb_count(crb_stationuuid[idx - 1]);
-        crb2mtag(crb_url_resolved[idx - 1], crb_name[idx - 1], crb_stationuuid[idx - 1], crb_image[idx - 1], crb_country[idx - 1], crb_language[idx - 1], crb_tags[idx - 1]);
+        crb_count(crb_stations_results[idx - 1].stationuuid);
+        crb2mtag(crb_stations_results[idx - 1]);
         break;
     }
 }
@@ -434,19 +410,18 @@ function crb_stats_get() {
     xmlhttp.send("");
 }
 
-
-function crb2mtag(url, name, stationid, logo, country, language, tags) {
-    statustext = "Trying... " + url;
+function crb2mtag(station) {
+    statustext = "Trying... " + station.url;
     window.NotifyOthers("tunein", statustext);
     let response;
     let stream_name_ffprobe;
-    let streamid = ('0000000000' + crc32(url)).slice(-10);
+    let streamid = ('0000000000' + crc32(station.url)).slice(-10);
     let tempfilename = temp_folder + "!temp.tags";
     let clean_name;
 
     utils.WriteTextFile(tempfilename, "");
 
-    let cmd = "\"" + crb2mtag_bat + "\"" + " " + "\"" + url + "\"" + " " + "\"" + tempfilename + "\"" + " " + streamid + " \"" + ffprobe_exe + "\" \"" + jq_exe + "\"" + " " + "\"" + _batEscape(name) + "\"" + " " + stationid;
+    let cmd = "\"" + crb2mtag_bat + "\"" + " " + "\"" + station.url + "\"" + " " + "\"" + tempfilename + "\"" + " " + streamid + " \"" + ffprobe_exe + "\" \"" + jq_exe + "\"" + " " + "\"" + _batEscape(station.name) + "\"" + " " + station.stationuuid;
     console.log(window.Name + " : " + cmd);
     WshShell.Run(cmd, 0, true);
 
@@ -460,10 +435,10 @@ function crb2mtag(url, name, stationid, logo, country, language, tags) {
         console.log(window.Name + " : " + err);
     }
     if (response) {
-        statustext = "Processing... " + url;
+        statustext = "Processing... " + station.url;
         window.NotifyOthers("tunein", statustext);
-        if (name) {
-            clean_name = _fbSanitise(name);
+        if (station.name) {
+            clean_name = _fbSanitise(station.name);
         } else if (stream_name_ffprobe) {
             clean_name = _fbSanitise(stream_name_ffprobe);
         } else
@@ -473,23 +448,24 @@ function crb2mtag(url, name, stationid, logo, country, language, tags) {
         if (!fso.FolderExists(folder))
             fso.CreateFolder(folder);
 
-        let filename_info_json = folder + _fbSanitise(name) + " - " + streamid + ".info.json";
+        let filename_info_json = folder + _fbSanitise(station.name) + " - " + streamid + ".info.json";
 
         let info = "{\"body\": [{\"name\": \"" + clean_name + "\"";
-        if (country)
-            info += ",\"location\": \"" + country + "\"";
-        if (language)
-            info += ",\"language\":\"" + language + "\"";
-        if (tags)
-            info += ",\"genre_name\":\"" + tags + "\"";
+        if (station.country)
+            info += ",\"location\": \"" + station.country + "\"";
+        if (station.language)
+            info += ",\"language\":\"" + station.language + "\"";
+        if (station.tags)
+            info += ",\"genre_name\":\"" + station.tags + "\"";
         info += "}]}";
         utils.WriteTextFile(filename_info_json, info);
 
         let imagefile = folder + _fbSanitise(clean_name) + " - " + streamid;
-        let logoext = logo.split('?')[0];
+        let logoext = station.logo.split('?')[0];
         logoext = logoext.split('.').pop();
 
-        cmd = "cscript //nologo \"" + download_vbs + "\" \"" + logo + "\" \"" + imagefile + "." + logoext + "\"";
+        cmd = "cscript //nologo \"" + download_vbs + "\" \"" + station.logo + "\" \"" + imagefile + "." + logoext + "\"";
+        console.log(cmd);
         WshShell.Run(cmd, 0, true);
 
         let filename = folder + clean_name + " - " + streamid + ".tags";
@@ -507,6 +483,7 @@ function crb2mtag(url, name, stationid, logo, country, language, tags) {
         console.log(window.Name + " : " + "Unable to create mtag");
         statustext = "Unable to create mtag ";
         window.NotifyOthers("tunein", statustext);
+        return;
     }
     statustext = "Idle.";
     window.NotifyOthers("mtagger", statustext);

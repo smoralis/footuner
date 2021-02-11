@@ -41,7 +41,6 @@ let ti_name;
 let tuneinresults = [];
 let urls2add = [];
 
-
 function tunein_main_menu() {
     statustext = "Tunein Main Menu....  ";
     window.NotifyOthers("tunein", statustext);
@@ -131,10 +130,6 @@ function tunein_main_menu() {
         } catch (e) {
             statustext = "Search Canceled.";
             window.NotifyOthers("tunein", statustext);
-            let n_timer = setTimeout(() => {
-                    statustext = "Idle.";
-                    window.NotifyOthers("tunein", statustext);
-                }, 2000);
         }
         break;
     case 12:
@@ -149,10 +144,6 @@ function tunein_main_menu() {
         } catch (e) {
             statustext = "Search Canceled.";
             window.NotifyOthers("tunein", statustext);
-            let n_timer = setTimeout(() => {
-                    statustext = "Idle.";
-                    window.NotifyOthers("tunein", statustext);
-                }, 2000);
         }
         break;
     case 13:
@@ -167,10 +158,6 @@ function tunein_main_menu() {
         } catch (e) {
             statustext = "Search Canceled.";
             window.NotifyOthers("tunein", statustext);
-            let n_timer = setTimeout(() => {
-                    statustext = "Idle.";
-                    window.NotifyOthers("tunein", statustext);
-                }, 2000);
         }
         break;
     case 14:
@@ -196,10 +183,6 @@ function tunein_main_menu() {
         } catch (e) {
             statustext = "Search Canceled.";
             window.NotifyOthers("tunein", statustext);
-            let n_timer = setTimeout(() => {
-                    statustext = "Idle.";
-                    window.NotifyOthers("tunein", statustext);
-                }, 2000);
         }
         break;
     case 15:
@@ -213,19 +196,10 @@ function tunein_main_menu() {
             } catch (e) {
                 statustext = "Search Canceled.";
                 window.NotifyOthers("tunein", statustext);
-                let n_timer = setTimeout(() => {
-                        statustext = "Idle.";
-                        window.NotifyOthers("tunein", statustext);
-                    }, 2000);
-
             }
         } else {
             statustext = "No Guide ID found";
             window.NotifyOthers("tunein", statustext);
-            let n_timer = setTimeout(() => {
-                    statustext = "Idle.";
-                    window.NotifyOthers("tunein", statustext);
-                }, 2000);
         }
         break;
     case 100:
@@ -242,10 +216,6 @@ function tunein_main_menu() {
         } catch (e) {
             statustext = "Canceled.";
             window.NotifyOthers("tunein", statustext);
-            let n_timer = setTimeout(() => {
-                    statustext = "Idle.";
-                    window.NotifyOthers("tunein", statustext);
-                }, 2000);
         }
         break;
     default:
@@ -662,7 +632,10 @@ function tunein2mtag(i, url, name, logo, guideid, item) {
         console.log(window.Name + " : " + "Unable to create mtag");
         statustext = "Unable to create mtag ";
         window.NotifyOthers("tunein", statustext);
+        return;
     }
+    statustext = "Idle.";
+    window.NotifyOthers("mtagger", statustext);
 }
 
 if (_isFile(tunein_genres_file) == false || _fileExpired(tunein_genres_file, ONE_DAY))

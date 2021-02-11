@@ -9,9 +9,10 @@
  * - Has script caching - script file will be read only once from filesystem (even if it is included from different panels).<br>
  * - Has better error reporting.<br>
  * <br>
- * Note: when the relative `path` is used it will be evaluated to the following values:<br>
- * - `${fb.ComponentPath}/${path}`, if the method is invoked from a top-level script (i.e. panel's `Configure` dialog).<br>
- * - `${current_script_path}/${path}`, otherwise.
+ * Note: when the relative `path` is used it will be searched in the following paths:<br>
+ * - `${current_package_path}/scripts/${path}`, if the panel uses a package script.<br>
+ * - `${current_script_path}/${path}`, if the script is not a top-level `in-memory` script.<br>
+ * - `${fb.ComponentPath}/${path}`, otherwise.
  *
  * @param {string} path Absolute or relative path to JavaScript file.
  * @param {object=} [options=undefined]
@@ -122,36 +123,40 @@ function ActiveXObject(name) {
 }
 
 /**
- * See {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Microsoft_JavaScript_extensions/Enumerator}.
- *
  * @constructor
  * @param {ActiveXObject} active_x_object Any ActiveX collection object.
+ * 
+ * @example
+     * let e = new Enumerator(active_x_object);
+     * for (e.moveFirst(); !e.atEnd(); e.moveNext()) {
+     *   console.log(e.item());
+     * }
  */
 function Enumerator(active_x_object) {
 
     /**
-     * Returns a Boolean value indicating if the enumerator is at the end of the collection.
+     * Returns a boolean value indicating if the enumerator has reached the end of the collection.
      *
      * @return {boolean}
      */
     this.atEnd = function () { };
 
     /**
-     * Returns the current item in the collection.
+     * Returns the item at the current enumerator position.
      *
      * @return {*}
      */
     this.item = function () { };
 
     /**
-     * Resets the current item in the collection to the first item.
+     * Resets enumerator position to the first item.
      *
      * @method
      */
     this.moveFirst = function () { };
 
     /**
-     * Moves the current item to the next item in the collection.
+     * Moves enumerator position to the next item.
      *
      * @method
      */
@@ -262,6 +267,16 @@ let fb = {
     StopAfterCurrent: undefined, // (boolean) (read, write)
 
     /**
+    * @type {string}
+    * @readonly
+    *
+    * @example
+    * console.log(fb.Version)
+    * // 1.4.1
+    */
+    Version: undefined,
+
+    /**
      * @type {float}
      *
      * @example
@@ -368,7 +383,7 @@ let fb = {
      * - DROPEFFECT_LINK should be used as fallback in case effect argument does not have DROPEFFECT_COPY (===1), since some external drops only allow DROPEFFECT_LINK effect.<br>
      * - Changing effect on key modifiers is nice (to be in line with native Windows behaviour): see the example below.<br>
      *
-     * @param {number} window_id see {@link window.ID}
+     * @param {number} window_id unused
      * @param {FbMetadbHandleList} handle_list
      * @param {number} effect Allowed effects.
      * @param {object=} [options=undefined] Customization options for the data displayed in the drag window.
@@ -392,7 +407,7 @@ let fb = {
      * <br>
      * Performance note: validate clipboard content with {@link fb.CheckClipboardContents} before calling this method.
      *
-     * @param {number} window_id
+     * @param {number=} [window_id=0] unused
      * @return {FbMetadbHandleList}
      *
      * @example
@@ -402,7 +417,7 @@ let fb = {
      *    menu.AppendMenuItem(!plman.IsPlaylistLocked(ap) && fb.CheckClipboardContents() ? MF_STRING : MF_GRAYED, 1, "Paste"); // see Flags.js for MF_* definitions
      *    let idx = menu.TrackPopupMenu(x, y);
      *    if (idx == 1) {
-     *        let handle_list  = fb.GetClipboardContents(window.ID);
+     *        let handle_list  = fb.GetClipboardContents();
      *        plman.InsertPlaylistItems(ap, plman.PlaylistItemCount(ap), handle_list );
      *    }
      *    return true;
@@ -555,7 +570,7 @@ let fb = {
     /**
      * Retrieves what the selection type is.
      *
-     * @return {number}
+     * @return {number} Possible values:<br>
      *     0 - undefined (no item)<br>
      *     1 - active_playlist_selection<br>
      *     2 - caller_active_playlist<br>
@@ -772,7 +787,7 @@ let gdi = {
     /**
      * Load image from file asynchronously.
      *
-     * @param {number} window_id see {@link window.ID}
+     * @param {number} window_id unused
      * @param {string} path
      * @return {number} a unique id, which is used in {@link module:callbacks~on_load_image_done on_load_image_done}.
      *
@@ -785,7 +800,7 @@ let gdi = {
      * Load image from file asynchronously.
      * Returns a `Promise` object, which will be resolved when image loading is done.
      *
-     * @param {number} window_id see {@link window.ID}
+     * @param {number} window_id unused
      * @param {string} path
      * @return {Promise.<?GdiBitmap>}
      *
@@ -1336,15 +1351,23 @@ let utils = {
     /**
      * Spawns a windows popup dialog to let you choose a colour.
      *
-     * @param {number} window_id {@link window.ID}
+     * @param {number} window_id unused
      * @param {number} default_colour This colour is used if OK button was not clicked.
      * @return {number}
      *
      * @example
-     * let colour = utils.ColourPicker(window.ID, RGB(255, 0, 0));
+     * let colour = utils.ColourPicker(0, RGB(255, 0, 0));
      * // See docs\Helper.js for RGB function.
      */
     ColourPicker: function (window_id, default_colour) { }, // (uint)
+
+    /**
+     * Edit a text file with the default text editor. <br>
+     * Default text editor can be changed via `Edit` button on the main tab of {@link window.ShowConfigureV2}.
+     *
+     * @param {number} path Path to file
+     */
+    EditTextFile: function (path) { }, // (uint)
 
     /**
      * Various utility functions for working with file.
@@ -1390,7 +1413,7 @@ let utils = {
      * Performance note: consider using {@link gdi.LoadImageAsync} or {@link gdi.LoadImageAsyncV2} if there are a lot of images to load
      * or if the image is big.
      *
-     * @param {number} window_id {@link window.ID}
+     * @param {number} window_id unused
      * @param {FbMetadbHandle} handle
      * @param {number=} [art_id=0] See Flags.js > AlbumArtId
      * @param {boolean=} [need_stub=true]
@@ -1412,7 +1435,7 @@ let utils = {
      * Load art image for the track asynchronously.<br>
      * Returns a `Promise` object, which will be resolved when art loading is done.
      *
-     * @param {number} window_id {@link window.ID}
+     * @param {number} window_id unused
      * @param {FbMetadbHandle} handle
      * @param {number=} [art_id=0] See Flags.js > AlbumArtId
      * @param {boolean=} [need_stub=true] If true, will return a stub image from `Preferences`>`Display`>`Stub image path` when there is no art image available.
@@ -1455,6 +1478,15 @@ let utils = {
     GetAlbumArtV2: function (handle, art_id, need_stub) { }, // (GdiBitmap) [, art_id][, need_stub]
 
     /**
+     * Get path to a package directory with the specified id.<br>
+     * Throws exception if package is not found.
+     * 
+     * @param {string} package_id
+     * @return {string}
+     */
+    GetPackagePath: function (package_id) { },
+
+    /**
      * @param {number} index {@link https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getsyscolor}
      * @return {number} 0 if failed
      *
@@ -1492,7 +1524,7 @@ let utils = {
      *
      * @example
      * // With "error_on_cancel" not set (or set to false), cancelling the dialog will return "default_val".
-     * let username = utils.InputBox(window.ID, "Enter your username", "Spider Monkey Panel", "");
+     * let username = utils.InputBox(0, "Enter your username", "Spider Monkey Panel", "");
      *
      * @example
      * // Using Example1, you can't tell if OK or Cancel was pressed if the return value is the same
@@ -1500,7 +1532,7 @@ let utils = {
      * // when Cancel is pressed.
      * let username = "";
      * try {
-     *    username = utils.InputBox(window.ID, "Enter your username", "Spider Monkey Panel", "", true);
+     *    username = utils.InputBox(0, "Enter your username", "Spider Monkey Panel", "", true);
      *    // OK was pressed.
      * } catch(e) {
      *     // Dialog was closed by pressing Esc, Cancel or the Close button.
@@ -1577,7 +1609,7 @@ let utils = {
      *   - Arrays: must be cast via `.toArray()` inside html. Each element has same type limitations as options.data.<br>
      *   - Functions: with maximum of 7 arguments. Each argument has same type limitations as options.data.
      *
-     * @param {number} window_id {@link window.ID}
+     * @param {number} window_id unused
      * @param {string} code_or_path Html code or file path. File path must begin with `file://` prefix.
      * @param {object=} [options=undefined]
      * @param {number=} [options.width=250] Window width
@@ -1596,7 +1628,7 @@ let utils = {
      * // See `samples/basic/HtmlDialogWithCheckbox.js`
      *
      * @example <caption>Dialog from file</caption>
-     * utils.ShowHtmlDialog(window.ID, `file://${fb.ComponentPath}samples/basic/html/PopupWithCheckBox.html`);
+     * utils.ShowHtmlDialog(0, `file://${fb.ComponentPath}samples/basic/html/PopupWithCheckBox.html`);
      */
     ShowHtmlDialog: function (window_id, code_or_path, options) { },
 
@@ -1652,8 +1684,7 @@ let window = {
     DlgCode: undefined, // (uint) (read, write)
 
     /**
-     * Required in multiple methods such as {@link fb.GetClipboardContents}, {@link utils.ColourPicker}, {@link utils.GetAlbumArtAsync},
-     * {@link utils.InputBox}, {@link utils.LoadImageAsync} and etc.
+     * Window handle casted to uint32_t.
      *
      * @type {number}
      * @readonly
@@ -1688,6 +1719,25 @@ let window = {
     IsVisible: undefined, // (boolean) (read)
 
     /**
+    * Return value of {@link window.JsMemoryStats}.<br>
+    * 
+    * @typedef {Object} JsMemoryStats
+    * @property {number} memory_usage Memory usage of the current panel (in bytes)
+    * @property {number} total_memory_usage Total memory usage of all panels (in bytes)
+    * @property {number} total_memory_limit 
+    *    Maximum allowed memory usage for the component (in bytes).<br>
+    *    If the total memory usage exceeds this value, all panels will fail with OOM error.
+    */
+
+    /**
+     * Get memory statistics for JavaScript engine.
+     * 
+     * @type {JsMemoryStats}
+     * @readonly
+     */
+    JsMemoryStats: undefined,
+
+    /**
      * @type {number}
      * @readonly
      */
@@ -1710,8 +1760,11 @@ let window = {
 
     /**
      * Maximum allowed memory usage for the component (in bytes).<br>
-     * If the total memory usage exceeds this value, all panels will fail with OOM error.
+     * If the total memory usage exceeds this value, all panels will fail with OOM error.<br>
+     * <br>
+     * Deprecated: use {@link window.JsMemoryStats.total_memory_limit} instead.
      *
+     * @deprecated
      * @type {number}
      * @readonly
      */
@@ -1732,8 +1785,7 @@ let window = {
     MinWidth: undefined, // (uint) (read, write)
 
     /**
-     * Returns the author set in {@link window.DefinePanel}.
-     * If it isn't present, the GUID of the panel is returned.
+     * Returns the panel name set in {@link window.ShowConfigureV2}.
      *
      * @type {string}
      * @readonly
@@ -1741,12 +1793,33 @@ let window = {
     Name: undefined, // (string) (read)
 
     /**
-     * Memory usage of the current panel (in bytes).
+     * Memory usage of the current panel (in bytes).<br>
+     * <br>
+     * Deprecated: use {@link window.JsMemoryStats.memory_usage} instead.
      *
      * @type {number}
      * @readonly
      */
     PanelMemoryUsage: undefined, // (uint) (read)
+
+    /**
+    * Return value of {@link window.ScriptInfo}.<br>
+    * Note: package_id is only present when the panel script is a package.
+    * 
+    * @typedef {Object} ScriptInfo
+    * @property {string} Name
+    * @property {string} [Author]
+    * @property {string} [Version]
+    * @property {string} [PackageId]
+    */
+
+    /**
+     * Information about the panel script.
+     *
+     * @type {ScriptInfo}
+     * @readonly
+     */
+    ScriptInfo: undefined,
 
     /**
      * Get associated tooltip object.
@@ -1757,7 +1830,9 @@ let window = {
     Tooltip: undefined,
 
     /**
-     * Total memory usage of all panels (in bytes).
+     * Total memory usage of all panels (in bytes).<br>
+     * <br>
+     * Deprecated: use {@link window.JsMemoryStats.total_memory_usage} instead.
      *
      * @type {number}
      * @readonly
@@ -1785,11 +1860,16 @@ let window = {
     ClearInterval: function (timerID) { }, // (void)
 
     /**
-     * Setups the panel information and available features.<br>
+     * Setups the panel and script information and available features.<br>
      * Can be called only once, so it's better to define it
-     * directly in the panel Configure menu.
+     * directly in the panel Configure menu.<br>
+     * <br>
+     * Deprecated: use {@link window.DefineScript} instead.<br>
+     * Panel name can be changed via {@link window.ShowConfigureV2}.<br>
      *
-     * @param {string} name Displayed panel name
+     * @deprecated
+     *
+     * @param {string} name Script name and panel name
      * @param {object=} [options={}]
      * @param {string=} [options.author=''] Script author
      * @param {string=} [options.version=''] Script version
@@ -1797,6 +1877,26 @@ let window = {
      * @param {boolean=} [options.features.drag_n_drop=false] Indicates if drag_n_drop functionality should be enabled
      */
     DefinePanel: function (name, options) { }, // (void)
+
+    /**
+     * Setup the script information.<br>
+     * Can be called only once for the whole panel.
+     * 
+     * @param {string} name Script name
+     * @param {object=} [options={}]
+     * @param {string=} [options.author=''] Script author
+     * @param {string=} [options.version=''] Script version
+     * @param {object=} [options.features=undefined] Additional script features
+     * @param {boolean=} [options.features.drag_n_drop=false] Indicates if drag_n_drop functionality should be enabled
+     * @param {boolean=} [options.features.grab_focus=true] Indicates if panel should grab mouse focus
+     */
+    DefineScript: function (name, options) { }, // (void)
+
+     /**
+     * Open the current panel script in the default text editor.<br>
+     * Default text editor can be changed via `Edit` button on the main tab of {@link window.ShowConfigureV2}.
+     */
+    EditScript: function () { },
 
     /**
      * @return {MenuObject}
@@ -1962,8 +2062,18 @@ let window = {
     /**
      * Show configuration window of current panel
      * @method
+     * 
+     * Deprecated: use {@link window.ShowConfigureV2} to configure panel and {@link window.EditScript} to edit script.
+     *
+     * @deprecated
      */
     ShowConfigure: function () { }, // (void)
+
+    /**
+     * Show configuration window of current panel
+     * @method
+     */
+    ShowConfigureV2: function () { }, // (void)
 
     /**
      * Show properties window of current panel
@@ -2769,8 +2879,18 @@ function FbUiSelectionHolder() {
      * Sets the selected items.
      *
      * @param {FbMetadbHandleList} handle_list
+     * 
+     * @param {number} [type=0] Selection type. Possible values:<br>
+     *     0 - default, undefined<br>
+     *     1 - active_playlist_selection<br>
+     *     2 - caller_active_playlist<br>
+     *     3 - playlist_manager<br>
+     *     4 - now_playing<br>
+     *     5 - keyboard_shortcut_list<br>
+     *     6 - media_library_viewer
+     * 
      */
-    this.SetSelection = function (handle_list) { }; // (void)
+    this.SetSelection = function (handle_list, type) { }; // (void)
 
     /**
      * Sets selected items to playlist selection and enables tracking.<br>

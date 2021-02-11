@@ -1,0 +1,1 @@
+%1 --input-format=xml -e  "//directory/entry/{'name': server_name, 'url': listen_url, 'type': server_type , 'bitrate': bitrate, 'genre': genre}" %2 --output-format=json-wrapped > %3
