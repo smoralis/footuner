@@ -247,7 +247,7 @@ function crb_process_menu(selection, title) {
                             _menu.AppendMenuItem(MF_GRAYED | MF_MENUBARBREAK, i + 9000, " (+)");
                             _menu.AppendMenuSeparator();
                         }
-                        _menu.AppendMenuItem(ml_arr.includes(crb_stations_results[i].stationuuid) ? MF_STRING | MF_CHECKED : MF_STRING, i + 1, _menuEscape(crb_stations_results[i].name) + ' (' + crb_stations_results[i].clickcount + ') [' + crb_stations_results[i].bitrate + " " + crb_stations_results[i].codec + ']');
+                        _menu.AppendMenuItem(ml_arr.includes(crb_stations_results[i].stationuuid) ? MF_STRING | MF_CHECKED : MF_STRING, i + 1, _menuEscape(crb_stations_results[i].name) + ' [' + crb_stations_results[i].bitrate + " " + crb_stations_results[i].codec + ']' + ' (clicks: ' + crb_stations_results[i].clickcount + ')');
                     }
                 }
 
@@ -302,7 +302,7 @@ function crb_process_menu_next_prev(counter, title) {
                 _pmenu.AppendMenuItem(MF_GRAYED | MF_MENUBARBREAK, i + 9000, " (+)");
                 _pmenu.AppendMenuSeparator();
             }
-            _pmenu.AppendMenuItem(ml_arr.includes(crb_stations_results[i].stationuuid) ? MF_STRING | MF_CHECKED : MF_STRING, i + 1, _menuEscape(crb_stations_results[i].name) + ' (' + crb_stations_results[i].clickcount + ') [' + crb_stations_results[i].bitrate + " " + crb_stations_results[i].codec + ']');
+            _pmenu.AppendMenuItem(ml_arr.includes(crb_stations_results[i].stationuuid) ? MF_STRING | MF_CHECKED : MF_STRING, i + 1, _menuEscape(crb_stations_results[i].name) + ' [' + crb_stations_results[i].bitrate + " " + crb_stations_results[i].codec + ']' + ' (' + crb_stations_results[i].clickcount + ' clicks)');
         }
     }
 

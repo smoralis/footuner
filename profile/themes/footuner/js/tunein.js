@@ -391,7 +391,7 @@ function tunein_process_menu(selection) {
                         m = 0;
                     }
 
-                    _menu.AppendMenuItem(ml_arr.includes(tuneinresults[i].guidevalue) ? MF_STRING | MF_CHECKED : MF_STRING, i + 1, _menuEscape(tuneinresults[i].namevalue) + (tuneinresults[i].itemvalue ? (' [' + tuneinresults[i].itemvalue + ']') : "") + (tuneinresults[i].reliabilityvalue ? (' [' + tuneinresults[i].reliabilityvalue + '%]') : ""));
+                    _menu.AppendMenuItem(ml_arr.includes(tuneinresults[i].guidevalue) ? MF_STRING | MF_CHECKED : MF_STRING, i + 1, _menuEscape(tuneinresults[i].namevalue) + (tuneinresults[i].itemvalue ? (' [' + tuneinresults[i].itemvalue + ']') : "") + (tuneinresults[i].reliabilityvalue ? (' [reliability: ' + tuneinresults[i].reliabilityvalue + '%]') : ""));
 
                     if (tuneinresults[i].namevalue == "More Stations" || tuneinresults[i].namevalue == "Most Popular" || tuneinresults[i].namevalue == "By Location" || tuneinresults[i].namevalue == "More Shows" || tuneinresults[i].namevalue == "Recent Episodes") {
                         _menu.AppendMenuSeparator();
