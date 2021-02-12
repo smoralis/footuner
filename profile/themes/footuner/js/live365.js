@@ -5,105 +5,119 @@ const live365_ico = fb.ProfilePath + "themes\\footuner\\images\\buttons\\live365
 
 let live365_stations_results = [];
 
-function live365_main_menu() {
-    statustext = "Live365 Main Menu....  ";
-    window.NotifyOthers("tunein", statustext);
+let live365_genres_file = fb.ProfilePath + 'themes\\footuner\\live365_genres.json';
 
+function live365_genres_get() {
+    let xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
     let selection = 'https://api.live365.com/v2/genres';
     xmlhttp.open('GET', selection);
-    xmlhttp.setRequestHeader('User-Agent', "foobar2000");
+    xmlhttp.setRequestHeader('User-Agent', "spider_monkey_panel_footuner");
     xmlhttp.onreadystatechange = () => {
         if (xmlhttp.readyState == 4) {
             if (xmlhttp.status == 200) {
                 let json_data = _jsonParse(xmlhttp.responseText);
-                let items = json_data.length;
-
-                let subgenres_id_arr = [];
-                let subgenres_names_arr = [];
-
-                let _menu = window.CreatePopupMenu();
-
-                _menu.AppendMenuItem(MF_GRAYED, 0, "Live365 Main Menu");
-                _menu.AppendMenuSeparator();
-                _menu.AppendMenuItem(MF_STRING, 10000, "Search by Name");
-                _menu.AppendMenuSeparator();
-
-                let count = 0;
-                for (let i = 0; i < json_data.length; i++) {
-                    count += json_data[i]['playing-stations-count'];
-                    let subgenrename = "_genre" + i;
-                    subgenrename = window.CreatePopupMenu();
-                    subgenrename.AppendTo(_menu, MF_STRING, json_data[i].name + " (" + json_data[i]['playing-stations-count'] + ")");
-                    for (let j = 0; j < json_data[i]['sub-genres'].length; j++) {
-                        subgenrename.AppendMenuItem(MF_STRING, json_data[i]['sub-genres'][j].id, json_data[i]['sub-genres'][j].name + " (" + json_data[i]['sub-genres'][j]['playing-stations-count'] + ")");
-                        subgenres_id_arr.push(json_data[i]['sub-genres'][j].id);
-                        subgenres_names_arr.push(json_data[i]['sub-genres'][j].name);
-                    }
-                }
-
-                _menu.AppendMenuSeparator();
-                _menu.AppendMenuItem(MF_GRAYED, 0, "Stations Count: " + count);
-                _menu.AppendMenuSeparator();
-                _menu.AppendMenuItem(MF_STRING, 0, "<< Close Menu >>");
-
-                let idx = _menu.TrackPopupMenu(0, bs);
-
-                switch (true) {
-                case idx == 0:
-                    statustext = "Idle.";
-                    window.NotifyOthers("tunein", statustext);
-                    break;
-                case idx == 10000:
-                    let n_input = "";
-                    try {
-                        statustext = "Search Name - Waiting for input.";
-                        window.NotifyOthers("tunein", statustext);
-                        n_input = utils.InputBox(window.ID, "ENTER Name", "Search for Name", "", true);
-                        let selection = 'https://api.live365.com/v2/search';
-                        data = {
-                            "title": n_input
-                        };
-                        xmlhttp.open('POST', selection);
-                        xmlhttp.setRequestHeader('Content-type', 'application/json; charset=UTF-8');
-                        xmlhttp.setRequestHeader('User-Agent', 'foobar2000');
-                        xmlhttp.onreadystatechange = () => {
-                            if (xmlhttp.readyState == 4) {
-                                if (xmlhttp.status == 200) {
-                                    live365_process_menu(xmlhttp.responseText, n_input);
-                                }
-                            }
-                        }
-                        xmlhttp.send(JSON.stringify(data));
-                    } catch (e) {
-                        statustext = "Search Canceled.";
-                        window.NotifyOthers("tunein", statustext);
-                    }
-
-                    break;
-                default:
-                    statustext = "Building menu....  ";
-                    window.NotifyOthers("tunein", statustext);
-                    let selection = 'https://api.live365.com/v2/search';
-                    data = {
-                        "genres": [idx]
-                    };
-                    xmlhttp.open('POST', selection);
-                    xmlhttp.setRequestHeader('Content-type', 'application/json; charset=UTF-8');
-                    xmlhttp.setRequestHeader('User-Agent', 'foobar2000');
-                    xmlhttp.onreadystatechange = () => {
-                        if (xmlhttp.readyState == 4) {
-                            if (xmlhttp.status == 200) {
-                                live365_process_menu(xmlhttp.responseText, subgenres_names_arr[subgenres_id_arr.indexOf(idx)]);
-                            }
-                        }
-                    }
-                    xmlhttp.send(JSON.stringify(data));
-                    break;
-                }
+                utils.WriteTextFile(live365_genres_file, JSON.stringify(json_data, null, 2));
             }
         }
     }
     xmlhttp.send("");
+}
+
+function live365_main_menu() {
+    statustext = "Live365 Main Menu....  ";
+    window.NotifyOthers("tunein", statustext);
+
+    if (_isFile(live365_genres_file) == false) {
+        statustext = "Live365 Genre List Not Downloaded, try again later...";
+        window.NotifyOthers("tunein", statustext);
+        return;
+    }
+
+    let json_data = _jsonParse(utils.ReadTextFile(live365_genres_file));
+    let items = json_data.length;
+
+    let subgenres_id_arr = [];
+    let subgenres_names_arr = [];
+
+    let _menu = window.CreatePopupMenu();
+
+    _menu.AppendMenuItem(MF_GRAYED, 0, "Live365 Main Menu");
+    _menu.AppendMenuSeparator();
+    _menu.AppendMenuItem(MF_STRING, 10000, "Search by Name");
+    _menu.AppendMenuSeparator();
+
+    let count = 0;
+    for (let i = 0; i < json_data.length; i++) {
+        count += json_data[i]['playing-stations-count'];
+        let subgenrename = "_genre" + i;
+        subgenrename = window.CreatePopupMenu();
+        subgenrename.AppendTo(_menu, MF_STRING, json_data[i].name + " (" + json_data[i]['playing-stations-count'] + ")");
+        for (let j = 0; j < json_data[i]['sub-genres'].length; j++) {
+            subgenrename.AppendMenuItem(MF_STRING, json_data[i]['sub-genres'][j].id, json_data[i]['sub-genres'][j].name + " (" + json_data[i]['sub-genres'][j]['playing-stations-count'] + ")");
+            subgenres_id_arr.push(json_data[i]['sub-genres'][j].id);
+            subgenres_names_arr.push(json_data[i]['sub-genres'][j].name);
+        }
+    }
+
+    _menu.AppendMenuSeparator();
+    _menu.AppendMenuItem(MF_GRAYED, 0, "Stations Count: " + count);
+    _menu.AppendMenuSeparator();
+    _menu.AppendMenuItem(MF_STRING, 0, "<< Close Menu >>");
+
+    let idx = _menu.TrackPopupMenu(0, bs);
+
+    switch (true) {
+    case idx == 0:
+        statustext = "Idle.";
+        window.NotifyOthers("tunein", statustext);
+        break;
+    case idx == 10000:
+        let n_input = "";
+        try {
+            statustext = "Search Name - Waiting for input.";
+            window.NotifyOthers("tunein", statustext);
+            n_input = utils.InputBox(window.ID, "ENTER Name", "Search for Name", "", true);
+            let selection = 'https://api.live365.com/v2/search';
+            data = {
+                "title": n_input
+            };
+            xmlhttp.open('POST', selection);
+            xmlhttp.setRequestHeader('Content-type', 'application/json; charset=UTF-8');
+            xmlhttp.setRequestHeader('User-Agent', 'foobar2000');
+            xmlhttp.onreadystatechange = () => {
+                if (xmlhttp.readyState == 4) {
+                    if (xmlhttp.status == 200) {
+                        live365_process_menu(xmlhttp.responseText, n_input);
+                    }
+                }
+            }
+            xmlhttp.send(JSON.stringify(data));
+        } catch (e) {
+            statustext = "Search Canceled.";
+            window.NotifyOthers("tunein", statustext);
+        }
+
+        break;
+    default:
+        statustext = "Building menu....  ";
+        window.NotifyOthers("tunein", statustext);
+        let selection = 'https://api.live365.com/v2/search';
+        data = {
+            "genres": [idx]
+        };
+        xmlhttp.open('POST', selection);
+        xmlhttp.setRequestHeader('Content-type', 'application/json; charset=UTF-8');
+        xmlhttp.setRequestHeader('User-Agent', 'foobar2000');
+        xmlhttp.onreadystatechange = () => {
+            if (xmlhttp.readyState == 4) {
+                if (xmlhttp.status == 200) {
+                    live365_process_menu(xmlhttp.responseText, subgenres_names_arr[subgenres_id_arr.indexOf(idx)]);
+                }
+            }
+        }
+        xmlhttp.send(JSON.stringify(data));
+        break;
+    }
 }
 
 function live365_process_menu(selection, title) {
@@ -312,3 +326,6 @@ function live3652mtag(station) {
     statustext = "Idle.";
     window.NotifyOthers("mtagger", statustext);
 }
+
+if (_isFile(live365_genres_file) == false || _fileExpired(live365_genres_file, ONE_DAY))
+    live365_genres_get();
