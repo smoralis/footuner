@@ -55,8 +55,6 @@ function icecast_main_menu() {
 
     _menu.AppendMenuItem(MF_STRING, 0, "<< Close Menu >>");
 
-    _menu.AppendMenuSeparator();
-
     window.SetCursor(32649);
 
     let idx = _menu.TrackPopupMenu(0, bs);
