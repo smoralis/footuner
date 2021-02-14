@@ -679,7 +679,8 @@ function tunein2mtag(i, url, name, logo, guideid, item) {
                 function add_mtag() {
                     cmd = "\"" + fb.FoobarPath + "foobar2000.exe" + "\"" + " /run_main:\"View/Switch to playlist/New Stations\" /add /immediate " + "\"" + filename + "\"";
                     WshShell.Run(cmd, 0, false);
-					
+                    statustext = "Idle.";
+                    window.NotifyOthers("tunein", statustext);
                     resolve();
                 }
 
