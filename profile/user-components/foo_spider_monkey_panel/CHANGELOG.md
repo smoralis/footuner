@@ -2,6 +2,7 @@
 
 #### Table of Contents
 - [Unreleased](#unreleased)
+- [1.4.1](#141---2021-02-14)
 - [1.4.0](#140---2021-02-11)
 - [1.3.1](#131---2020-07-18)
 - [1.3.0](#130---2020-07-10)
@@ -25,6 +26,19 @@
 ___
 
 ## [Unreleased][]
+
+## [1.4.1][] - 2021-02-14
+### Changed
+- Changed casing of `window.JsMemoryStats` fields for consistency with the rest of API.
+- Added indicator when panel name is overriden by the script in `Configure` dialog.
+- Improved package manager behaviour in various scenarios.
+
+### Fixed
+- Fixed various bugs in `Package` tab of `Configure` dialog.
+- Fixed sorting of package files.
+- Fixed conflict with `foo_wave_seekbar`.
+- Fixed `foo_acfu` integration.
+- Fixed data not refreshing on `Apply` in `Configure` dialog.
 
 ## [1.4.0][] - 2021-02-11
 ### Added
@@ -65,14 +79,16 @@ ___
 - API changes:
   - `utils.FileTest()` is marked as **\[Deprecated]**. Use new corresponding methods instead.
   - `window.ID` is now optional and unused in all methods that required it.
-  - `window.Name` now returns panel name instead of script name. Use `window.ScriptInfo.Name` to retrieve script name.
   - `window.DefinePanel()` is marked as **\[Deprecated]**. Use `window.DefineScript()` instead.
   - `window.MemoryLimit`, `window.PanelMemoryUsage` and `window.TotalMemoryUsage` are marked as **\[Deprecated]**. Use `window.JsMemoryStats` instead.
+  - `window.Name` now returns panel name instead of script name. Use `window.ScriptInfo.Name` to retrieve script name.
+  - `window.ShowConfigure()` is marked as **\[Deprecated]**. Use `window.ShowConfigureV2()` to configure panel and `window.EditScript` to edit script.
 
 ### Fixed
 - Fixed component crash when passing objects to `console.log()`.
 - Fixed component crash when there is a stack overflow in JS.
 - Fixed the weird image offset when using `fb.DoDragDrop()` with custom image and theming disabled.
+- Fixed `utils.ShowHtmlDialog()` not applying IE mode, when HTML code is passed directly to the method.
 - Various `ActiveXObject` fixes:
   - Errors in callbacks passed to `ActiveXObject` objects and methods are now properly propagated to the script. 
   - Fixed inability to use subscripts with some `ActiveXObject` objects.
@@ -362,7 +378,8 @@ ___
   - More rigorous error checks.
 - Updated samples with compatibility fixes.
 
-[unreleased]: https://github.com/TheQwertiest/foo_spider_monkey_panel/compare/v1.4.0...HEAD
+[unreleased]: https://github.com/TheQwertiest/foo_spider_monkey_panel/compare/v1.4.1...HEAD
+[1.4.1]: https://github.com/TheQwertiest/foo_spider_monkey_panel/compare/v1.4.0...v1.4.1
 [1.4.0]: https://github.com/TheQwertiest/foo_spider_monkey_panel/compare/v1.3.1...v1.4.0
 [1.3.1]: https://github.com/TheQwertiest/foo_spider_monkey_panel/compare/v1.3.0...v1.3.1
 [1.3.0]: https://github.com/TheQwertiest/foo_spider_monkey_panel/compare/v1.2.3...v1.3.0

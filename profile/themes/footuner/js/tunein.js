@@ -604,7 +604,7 @@ function tunein2mtag(i, url, name, logo, guideid, item) {
 
                 if (!fso.FolderExists(folder))
                     fso.CreateFolder(folder);
-                console.log("xxxx");
+
                 let mtag = utils.ReadTextFile(tempfilename);
                 utils.WriteTextFile(filename, he.decode(mtag));
 
