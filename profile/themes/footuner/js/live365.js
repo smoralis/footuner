@@ -99,7 +99,7 @@ function live365_main_menu() {
 
         break;
     default:
-        statustext = "Building menu....  ";
+        statustext = "Awaiting Response....  ";
         window.NotifyOthers("tunein", statustext);
         let selection = 'https://api.live365.com/v2/search';
         data = {
@@ -121,6 +121,8 @@ function live365_main_menu() {
 }
 
 function live365_process_menu(selection, title) {
+    statustext = "Menu of .... " + title;
+    window.NotifyOthers("tunein", statustext);
     let json_data = _jsonParse(selection);
 
     let counter = 0;
@@ -252,79 +254,146 @@ function live365_process_menu_next_prev(counter, title) {
 }
 
 function live3652mtag(station) {
-    statustext = "Trying... " + station.url;
+    statustext = "Processing... " + station.url + "\n";
     window.NotifyOthers("tunein", statustext);
     let response;
     let stream_name_ffprobe;
     let streamid = ('0000000000' + crc32(station.url)).slice(-10);
-    let tempfilename = temp_folder + "!temp.tags";
+    let tempfilename = temp_folder + "!temp" + streamid + ".tags";
     let clean_name;
-
-    utils.WriteTextFile(tempfilename, "");
 
     let cmd = "\"" + live3652mtag_bat + "\"" + " " + "\"" + station.url + "\"" + " " + "\"" + tempfilename + "\"" + " " + streamid + " \"" + ffprobe_exe + "\" \"" + jq_exe + "\"" + " " + "\"" + _batEscape(station.name) + "\"" + " " + station.mount_id;
     console.log(window.Name + " : " + cmd);
-    WshShell.Run(cmd, 0, true);
+    WshShell.Run(cmd, 0, false);
 
-    try {
-        let temptagarray = utils.ReadTextFile(tempfilename);
-        let json_data = _jsonParse(temptagarray);
-        json_data = json_data[0];
-        response = json_data["@"];
-        stream_name_ffprobe = json_data["STREAM_FFPROBE_NAME"];
-    } catch (err) {
-        console.log(window.Name + " : " + err);
+    let counter = 0;
+
+    let timer = setInterval(() => {
+            counter++;
+            statustext2 = "(ffprobe) " + (15 - counter);
+            window.NotifyOthers("tunein", statustext + statustext2);
+            try {
+                let ffprobe_file = fso.OpenTextFile(tempfilename, 8);
+                ffprobe_file.Close();
+                clearInterval(timer);
+                statustext2 = "(ffprobe) \u221A ";
+                window.NotifyOthers("tunein", statustext + statustext2);
+                mtag_it();
+            } catch (err) {
+                if (counter == 15) {
+                    clearInterval(timer);
+                    let cmd = 'taskkill.exe /F /IM ffprobe.exe';
+                    WshShell.Run(cmd, 0, true);
+                    if (utils.FileExists(tempfilename))
+                        fso.DeleteFile(tempfilename);
+                    statustext = "Process Failed... " + station.url + "\n";
+                    statustext2 = "Failed to ffprobe " + station.url;
+                    window.NotifyOthers("tunein", statustext + statustext2);
+                }
+            }
+        }, 1000);
+
+    function mtag_it() {
+        try {
+            let temptagarray = utils.ReadTextFile(tempfilename);
+            let json_data = _jsonParse(temptagarray);
+            json_data = json_data[0];
+            response = json_data["@"];
+            stream_name_ffprobe = json_data["STREAM_FFPROBE_NAME"];
+        } catch (err) {
+            statustext = "Process Failed... " + station.url + "\n";
+            statustext3 = "Failed to mtag " + station.url;
+            window.NotifyOthers("tunein", statustext + statustext3);
+            console.log(window.Name + " : " + err);
+        }
+        if (response) {
+            statustext3 = "(mtag) ... ";
+            window.NotifyOthers("tunein", statustext + statustext2 + statustext3);
+            if (station.name) {
+                clean_name = _fbSanitise(station.name);
+            } else if (stream_name_ffprobe) {
+                clean_name = _fbSanitise(stream_name_ffprobe);
+            } else
+                clean_name = "Unknown";
+
+            let folder = mtags_folder + clean_name + " - " + streamid + "\\";
+            if (!fso.FolderExists(folder))
+                fso.CreateFolder(folder);
+
+            let filename_info_json = folder + _fbSanitise(station.name) + " - " + streamid + ".info.json";
+
+            let info = "{\"body\": [{\"name\": \"" + clean_name + "\"";
+            if (station.description)
+                info += ",\"description\": \"" + station.description.replace(/[\r\n]+/gm, "").replace(/\"/g, "''") + "\"";
+            if (station.genres)
+                info += ",\"genre_name\":\"" + station.genres + "\"";
+            info += "}]}";
+            utils.WriteTextFile(filename_info_json, info);
+
+            let filename = folder + clean_name + " - " + streamid + ".tags";
+            let mtag = utils.ReadTextFile(tempfilename);
+
+            utils.WriteTextFile(filename, he.decode(mtag));
+
+            fso.DeleteFile(tempfilename);
+
+            statustext3 = " (mtag) \u221A ";
+            window.NotifyOthers("tunein", statustext + statustext2 + statustext3);
+            if (station.logo) {
+                let imagefile = folder + _fbSanitise(clean_name) + " - " + streamid;
+                let logoext = station.logo.split('?')[0];
+                logoext = logoext.split('.').pop();
+
+                cmd = "cscript //nologo \"" + download_vbs + "\" \"" + station.logo + "\" \"" + imagefile + "." + logoext + "\"";
+                WshShell.Run(cmd, 0, false);
+
+                counter = 0;
+
+                let timer2 = setInterval(() => {
+                        counter++;
+                        statustext4 = " (logo) " + (15 - counter);
+                        window.NotifyOthers("tunein", statustext + statustext2 + statustext3 + statustext4);
+
+                        if (utils.IsFile(imagefile + "." + logoext)) {
+                            clearInterval(timer2);
+                            statustext4 = " (logo) \u221A ";
+                            window.NotifyOthers("tunein", statustext + statustext2 + statustext3 + statustext4);
+                            add_mtag();
+
+                        } else if (counter == 15) {
+                            clearInterval(timer2);
+                            statustext4 = " (logo) x";
+                            console.log(window.Name + " : Logo download failed. URL: " + station.logo);
+                            window.NotifyOthers("tunein", statustext + statustext2 + statustext3 + statustext4);
+                            add_mtag();
+                        }
+
+                    }, 1000);
+            } else {
+                statustext4 = " (logo) N/A ";
+                window.NotifyOthers("tunein", statustext + statustext2 + statustext3 + statustext4);
+                add_mtag();
+
+            }
+            function add_mtag() {
+
+                cmd = "\"" + fb.FoobarPath + "foobar2000.exe" + "\"" + " /run_main:\"View/Switch to playlist/New Stations\" /add /immediate " + "\"" + filename + "\"";
+                WshShell.Run(cmd, 0, false);
+                statustext = "Completed... " + station.url + "\n";
+                statustext5 = " (add) \u221A ";
+                window.NotifyOthers("tunein", statustext + statustext2 + statustext3 + statustext4 + statustext5);
+
+            }
+
+        } else {
+            fso.DeleteFile(tempfilename);
+            console.log(window.Name + " : " + "Unable to create mtag");
+            statustext = "Process Failed... " + station.url + "\n";
+            statustext4 = "Unable to create mtag ";
+            window.NotifyOthers("tunein", statustext + statustext4);
+            return;
+        }
     }
-    if (response) {
-        statustext = "Processing... " + station.url;
-        window.NotifyOthers("tunein", statustext);
-        if (station.name) {
-            clean_name = _fbSanitise(station.name);
-        } else if (stream_name_ffprobe) {
-            clean_name = _fbSanitise(stream_name_ffprobe);
-        } else
-            clean_name = "Unknown";
-
-        let folder = mtags_folder + clean_name + " - " + streamid + "\\";
-        if (!fso.FolderExists(folder))
-            fso.CreateFolder(folder);
-
-        let filename_info_json = folder + _fbSanitise(station.name) + " - " + streamid + ".info.json";
-
-        let info = "{\"body\": [{\"name\": \"" + clean_name + "\"";
-        if (station.description)
-            info += ",\"description\": \"" + station.description.replace(/[\r\n]+/gm, "").replace(/\"/g, "''") + "\"";
-        if (station.genres)
-            info += ",\"genre_name\":\"" + station.genres + "\"";
-        info += "}]}";
-        utils.WriteTextFile(filename_info_json, info);
-
-        let imagefile = folder + _fbSanitise(clean_name) + " - " + streamid;
-        let logoext = station.logo.split('?')[0];
-        logoext = logoext.split('.').pop();
-
-        cmd = "cscript //nologo \"" + download_vbs + "\" \"" + station.logo + "\" \"" + imagefile + "." + logoext + "\"";
-        WshShell.Run(cmd, 0, true);
-
-        let filename = folder + clean_name + " - " + streamid + ".tags";
-        let mtag = utils.ReadTextFile(tempfilename);
-
-        utils.WriteTextFile(filename, he.decode(mtag));
-
-        fso.DeleteFile(tempfilename);
-
-        cmd = "\"" + fb.FoobarPath + "foobar2000.exe" + "\"" + " /run_main:\"View/Switch to playlist/New Stations\" /add /immediate " + "\"" + filename + "\"";
-        WshShell.Run(cmd, 0, true);
-
-    } else {
-        fso.DeleteFile(tempfilename);
-        console.log(window.Name + " : " + "Unable to create mtag");
-        statustext = "Unable to create mtag ";
-        window.NotifyOthers("tunein", statustext);
-        return;
-    }
-    statustext = "Idle.";
-    window.NotifyOthers("mtagger", statustext);
 }
 
 if (_isFile(live365_genres_file) == false || _fileExpired(live365_genres_file, ONE_DAY))

@@ -148,7 +148,7 @@ function ic_process_menu(selection, title, method) {
                 _menu.AppendMenuItem(MF_GRAYED | MF_MENUBARBREAK, i + 9000, " (+)");
                 _menu.AppendMenuSeparator();
             }
-            _menu.AppendMenuItem(ml_arr.includes(('0000000000' + crc32(ic_stations_results[i].url)).slice(-10)) ? MF_STRING | MF_CHECKED : MF_STRING, i + 1, _menuEscape(ic_stations_results[i].name + " [" + ic_stations_results[i].bitrate + " " + ic_stations_results[i].type.split('/').pop() + "]"));
+            _menu.AppendMenuItem(ml_arr.includes(('0000000000' + crc32(ic_stations_results[i].url)).slice(-10)) ? MF_STRING | MF_CHECKED : MF_STRING, i + 1, _menuEscape(ic_stations_results[i].name.substring(0, 50) + " [" + ic_stations_results[i].bitrate + " " + ic_stations_results[i].type.split('/').pop() + "]"));
         }
     }
 
@@ -198,7 +198,7 @@ function ic_process_menu_next_prev(counter, title) {
                 _pmenu.AppendMenuItem(MF_GRAYED | MF_MENUBARBREAK, i + 9000, " (+)");
                 _pmenu.AppendMenuSeparator();
             }
-            _pmenu.AppendMenuItem(ml_arr.includes(('0000000000' + crc32(ic_stations_results[i].url)).slice(-10)) ? MF_STRING | MF_CHECKED : MF_STRING, i + 1, _menuEscape(ic_stations_results[i].name + " [" + ic_stations_results[i].bitrate + " " + ic_stations_results[i].type.split('/').pop() + "]"));
+            _pmenu.AppendMenuItem(ml_arr.includes(('0000000000' + crc32(ic_stations_results[i].url)).slice(-10)) ? MF_STRING | MF_CHECKED : MF_STRING, i + 1, _menuEscape(ic_stations_results[i].name.substring(0, 50) + " [" + ic_stations_results[i].bitrate + " " + ic_stations_results[i].type.split('/').pop() + "]"));
         }
     }
 
@@ -243,7 +243,7 @@ function ic_process_menu_next_prev(counter, title) {
 }
 
 function ic2mtag(url) {
-    statustext = "Processing... " + url;
+    statustext = "Processing... " + url + "\n";
     window.NotifyOthers("tunein", statustext);
 
     let response;
@@ -251,46 +251,86 @@ function ic2mtag(url) {
     let clean_name;
 
     let streamid = ('0000000000' + crc32(url)).slice(-10);
-    let tempfilename = temp_folder + "!temp.tags";
-
-    utils.WriteTextFile(tempfilename, "");
+    let tempfilename = temp_folder + "!temp" + streamid + ".tags";
 
     let cmd = url2mtag_bat + " " + "\"" + url + "\"" + " " + "\"" + tempfilename + "\"" + " " + streamid + " \"" + ffprobe_exe + "\" \"" + jq_exe + "\"";
-    console.log(cmd);
-    WshShell.Run(cmd, 0, true);
+    WshShell.Run(cmd, 0, false);
 
-    try {
-        let temptagarray = utils.ReadTextFile(tempfilename);
-        let json_data = _jsonParse(temptagarray);
-        json_data = json_data[0];
-        response = json_data["@"];
-        stream_name_ffprobe = json_data["STREAM_FFPROBE_NAME"];
-    } catch (err) {
-        console.log(window.Name + " : " + err);
-    }
+    let counter = 0;
 
-    if (response) {
-        statustext = "Processing " + url;
-        window.NotifyOthers("tunein", statustext);
+    let timer = setInterval(() => {
+            counter++;
+            statustext2 = "(ffprobe) " + (15 - counter);
+            window.NotifyOthers("tunein", statustext + statustext2);
+            try {
+                let ffprobe_file = fso.OpenTextFile(tempfilename, 8);
+                ffprobe_file.Close();
+                clearInterval(timer);
+                statustext2 = "(ffprobe) \u221A ";
+                window.NotifyOthers("tunein", statustext + statustext2);
+                mtag_it();
+            } catch (err) {
+                if (counter == 15) {
+                    clearInterval(timer);
+                    let cmd = 'taskkill.exe /F /IM ffprobe.exe';
+                    WshShell.Run(cmd, 0, false);
+                    if (utils.FileExists(tempfilename))
+                        fso.DeleteFile(tempfilename);
+                    statustext = "Process Failed... " + url + "\n";
+                    statustext2 = "Failed to ffprobe " + url;
+                    window.NotifyOthers("tunein", statustext + statustext2);
+                }
+            }
+        }, 1000);
 
-        if (!stream_name_ffprobe) {
-            clean_name = "Unknown"
-        } else {
-            clean_name = _fbSanitise(stream_name_ffprobe);
+    function mtag_it() {
+
+        try {
+            let temptagarray = utils.ReadTextFile(tempfilename);
+            let json_data = _jsonParse(temptagarray);
+            json_data = json_data[0];
+            response = json_data["@"];
+            stream_name_ffprobe = json_data["STREAM_FFPROBE_NAME"];
+        } catch (err) {
+            statustext = "Process Failed... " + url + "\n";
+            statustext3 = "Failed to mtag " + url;
+            window.NotifyOthers("tunein", statustext + statustext3);
+            console.log(window.Name + " : " + err);
         }
 
-        let folder = mtags_folder + clean_name + " - " + streamid + "\\";
-        if (!fso.FolderExists(folder))
-            fso.CreateFolder(folder);
-        let filename = folder + clean_name + " - " + streamid + ".tags";
-        let mtag = utils.ReadTextFile(tempfilename);
-        utils.WriteTextFile(filename, he.decode(mtag));
-        fso.DeleteFile(tempfilename);
-        let cmd = "\"" + fb.FoobarPath + "foobar2000.exe" + "\"" + " /run_main:\"View/Switch to playlist/New Stations\" /add /immediate " + "\"" + filename + "\"";
-        WshShell.Run(cmd, 0, true);
-    } else {
-        fso.DeleteFile(tempfilename);
+        if (response) {
+            statustext3 = "(mtag) ... ";
+            window.NotifyOthers("tunein", statustext + statustext2 + statustext3);
+
+            if (!stream_name_ffprobe) {
+                clean_name = "Unknown"
+            } else {
+                clean_name = _fbSanitise(stream_name_ffprobe);
+            }
+
+            let folder = mtags_folder + clean_name + " - " + streamid + "\\";
+            if (!fso.FolderExists(folder))
+                fso.CreateFolder(folder);
+            let filename = folder + clean_name + " - " + streamid + ".tags";
+            let mtag = utils.ReadTextFile(tempfilename);
+            utils.WriteTextFile(filename, he.decode(mtag));
+            fso.DeleteFile(tempfilename);
+
+            statustext3 = " (mtag) \u221A ";
+            window.NotifyOthers("tunein", statustext + statustext2 + statustext3);
+
+            let cmd = "\"" + fb.FoobarPath + "foobar2000.exe" + "\"" + " /run_main:\"View/Switch to playlist/New Stations\" /add /immediate " + "\"" + filename + "\"";
+            WshShell.Run(cmd, 0, false);
+
+            statustext = "Completed... " + url + "\n";
+            statustext4 = " (add) \u221A ";
+            window.NotifyOthers("tunein", statustext + statustext2 + statustext3 + statustext4);
+
+        } else {
+            fso.DeleteFile(tempfilename);
+            statustext = "Process Failed... " + url + "\n";
+            statustext4 = "Unable to create mtag ";
+            window.NotifyOthers("tunein", statustext + statustext4);
+        }
     }
-    statustext = "Idle.";
-    window.NotifyOthers("mtagger", statustext);
 }

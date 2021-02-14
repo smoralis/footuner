@@ -524,28 +524,17 @@ function process_tune(selection, name, logo, guideid, item) {
                 }
 
                 let total_urls = urls.length;
-                for (let i = 0; i < total_urls; i++) {
-                    statustext = "Processing " + (i + 1) + " of " + total_urls + " - " + urls[i];
-                    window.NotifyOthers("tunein", statustext);
-                    console.log(window.Name + " : " + statustext);
-                    tunein2mtag(i, urls[i], name, logo, guideid, item);
-                }
 
-                let total_mtags = urls2add.length;
-                for (let i = 0; i < total_mtags; i++) {
-                    statustext = "Adding " + (i + 1) + " of " + total_mtags + " - " + urls2add[i];
-                    window.NotifyOthers("tunein", statustext);
-                    console.log(window.Name + " : " + statustext);
-                    let cmd = "\"" + fb.FoobarPath + "foobar2000.exe" + "\"" + " /run_main:\"View/Switch to playlist/New Stations\" /add /immediate " + "\"" + urls2add[i] + "\"";
-                    WshShell.Run(cmd, 0, false);
-                }
-
-                urls2add = [];
-
-                let m_timer = setTimeout(() => {
-                        statustext = "Idle.";
+                async function includeurls(urls) {
+                    for (let i = 0; i < total_urls; i++) {
+                        statustext = "Processing " + (i + 1) + " of " + total_urls + " - " + urls[i] + "\n";
                         window.NotifyOthers("tunein", statustext);
-                    }, 2000);
+                        await tunein2mtag(i, urls[i], name, logo, guideid, item);
+                    }
+                }
+
+                includeurls(urls);
+
             }
         }
     }
@@ -553,89 +542,158 @@ function process_tune(selection, name, logo, guideid, item) {
 }
 
 function tunein2mtag(i, url, name, logo, guideid, item) {
-    let response;
-    let streamid = ('0000000000' + crc32(url)).slice(-10);
-    let tempfilename = temp_folder + "!temp.tags";
-    let folder = mtags_folder + _fbSanitise(name) + " - " + streamid + "\\";
-    let filename = folder + _fbSanitise(name) + " - " + streamid + ".tags";
-    let filename_info_json = folder + _fbSanitise(name) + " - " + streamid + ".info.json";
-    let filename_tracks_json = folder + _fbSanitise(name) + " - " + streamid + ".tracks.json";
-    let imagefile = folder + _fbSanitise(name) + " - " + streamid;
-    let logoext = logo.split('?')[0];
-    logoext = logoext.split('.').pop();
+    return new Promise(resolve => {
+        let response;
+        let streamid = ('0000000000' + crc32(url)).slice(-10);
+        let tempfilename = temp_folder + "!temp" + streamid + ".tags";
+        let folder = mtags_folder + _fbSanitise(name) + " - " + streamid + "\\";
+        let filename = folder + _fbSanitise(name) + " - " + streamid + ".tags";
+        let filename_info_json = folder + _fbSanitise(name) + " - " + streamid + ".info.json";
+        let filename_tracks_json = folder + _fbSanitise(name) + " - " + streamid + ".tracks.json";
+        let imagefile = folder + _fbSanitise(name) + " - " + streamid;
+        let logoext = logo.split('?')[0];
+        logoext = logoext.split('.').pop();
 
-    utils.WriteTextFile(tempfilename, "");
+        utils.WriteTextFile(tempfilename, "");
 
-    let cmd = "\"" + tunein2mtag_bat + "\"" + " " + "\"" + url + "\"" + " " + "\"" + tempfilename + "\"" + " " + streamid + " \"" + ffprobe_exe + "\" \"" + jq_exe + "\" " + "\"" + _batEscape(name) + "\"" + " " + guideid + " " + item;
-    console.log(window.Name + " : " + cmd);
-    WshShell.Run(cmd, 0, true);
+        let cmd = "\"" + tunein2mtag_bat + "\"" + " " + "\"" + url + "\"" + " " + "\"" + tempfilename + "\"" + " " + streamid + " \"" + ffprobe_exe + "\" \"" + jq_exe + "\" " + "\"" + _batEscape(name) + "\"" + " " + guideid + " " + item;
+        console.log(window.Name + " : " + cmd);
+        WshShell.Run(cmd, 0, false);
 
-    try {
-        let temptagarray = utils.ReadTextFile(tempfilename);
-        let json_data = _jsonParse(temptagarray);
-        json_data = json_data[0];
-        response = json_data["@"];
-    } catch (err) {
-        console.log(window.Name + " : " + err);
-    }
-    if (response) {
-        if (!fso.FileExists(filename)) {
-            if (!fso.FolderExists(folder))
-                fso.CreateFolder(folder);
+        let counter = 0;
 
-            cmd = "cscript //nologo \"" + download_vbs + "\" \"" + logo.replace(/\?.*/g, "") + "\" \"" + imagefile + "." + logoext + "\"";
-            WshShell.Run(cmd, 0, true);
-
-            let mtag = utils.ReadTextFile(tempfilename);
-            utils.WriteTextFile(filename, he.decode(mtag));
-
-            fso.DeleteFile(tempfilename);
-
-            let id = i + 1;
-
-            xmlhttp_d = [],
-            id;
-            xmlhttp_d[id] = new ActiveXObject("Microsoft.XMLHTTP");
-            url = "http://opml.radiotime.com/Describe.ashx?&id=" + guideid + "&partnerId=1&render=json";
-            xmlhttp_d[id].open("GET", url);
-            xmlhttp_d[id].setRequestHeader('User-Agent', "spider_monkey_panel_footuner");
-            xmlhttp_d[id].onreadystatechange = function () {
-                if (xmlhttp_d[id].readyState === 4 && xmlhttp_d[id].status === 200) {
-                    let json_data_d = _jsonParse(xmlhttp_d[id].responseText);
-                    utils.WriteTextFile(filename_info_json, JSON.stringify(json_data_d, null, 2));
+        let timer = setInterval(() => {
+                counter++;
+                statustext2 = "(ffprobe) " + (15 - counter);
+                window.NotifyOthers("tunein", statustext + statustext2);
+                try {
+                    let ffprobe_file = fso.OpenTextFile(tempfilename, 8);
+                    ffprobe_file.Close();
+                    clearInterval(timer);
+                    statustext2 = "(ffprobe) \u221A ";
+                    window.NotifyOthers("tunein", statustext + statustext2);
+                    mtag_it();
+                } catch (err) {
+                    if (counter == 15) {
+                        clearInterval(timer);
+                        let cmd = 'taskkill.exe /F /IM ffprobe.exe';
+                        WshShell.Run(cmd, 0, true);
+                        if (utils.FileExists(tempfilename))
+                            fso.DeleteFile(tempfilename);
+                        statustext = "Process Failed... " + url + "\n";
+                        statustext2 = "Failed to ffprobe " + url;
+                        window.NotifyOthers("tunein", statustext + statustext2);
+                    }
                 }
-            };
-            xmlhttp_d[id].send();
+            }, 1000);
+        function mtag_it() {
+            try {
+                let temptagarray = utils.ReadTextFile(tempfilename);
+                let json_data = _jsonParse(temptagarray);
+                json_data = json_data[0];
+                response = json_data["@"];
+            } catch (err) {
+                statustext = "Process Failed... " + url + "\n";
+                statustext3 = "Failed to mtag " + url;
+                window.NotifyOthers("tunein", statustext + statustext3);
+                console.log(window.Name + " : " + err);
+            }
+            if (response) {
+                statustext3 = "(mtag) ... ";
+                window.NotifyOthers("tunein", statustext + statustext2 + statustext3);
 
-            xmlhttp_t = [],
-            id;
-            xmlhttp_t[id] = new ActiveXObject("Microsoft.XMLHTTP");
-            url = "http://opml.radiotime.com/Browse.ashx?c=playlist&id=" + guideid + "&partnerId=1&render=json";
-            xmlhttp_t[id].open("GET", url);
-            xmlhttp_t[id].setRequestHeader('User-Agent', "spider_monkey_panel_footuner");
-            xmlhttp_t[id].onreadystatechange = function () {
-                if (xmlhttp_t[id].readyState === 4 && xmlhttp_t[id].status === 200) {
-                    let json_data_t = _jsonParse(xmlhttp_t[id].responseText);
-                    utils.WriteTextFile(filename_tracks_json, JSON.stringify(json_data_t, null, 2));
+                if (!fso.FolderExists(folder))
+                    fso.CreateFolder(folder);
+                console.log("xxxx");
+                let mtag = utils.ReadTextFile(tempfilename);
+                utils.WriteTextFile(filename, he.decode(mtag));
+
+                fso.DeleteFile(tempfilename);
+
+                statustext3 = " (mtag) \u221A ";
+                window.NotifyOthers("tunein", statustext + statustext2 + statustext3);
+
+                let id = i + 1;
+
+                xmlhttp_d = [],
+                id;
+                xmlhttp_d[id] = new ActiveXObject("Microsoft.XMLHTTP");
+                url1 = "http://opml.radiotime.com/Describe.ashx?&id=" + guideid + "&partnerId=1&render=json";
+                xmlhttp_d[id].open("GET", url1);
+                xmlhttp_d[id].setRequestHeader('User-Agent', "spider_monkey_panel_footuner");
+                xmlhttp_d[id].onreadystatechange = function () {
+                    if (xmlhttp_d[id].readyState === 4 && xmlhttp_d[id].status === 200) {
+                        let json_data_d = _jsonParse(xmlhttp_d[id].responseText);
+                        utils.WriteTextFile(filename_info_json, JSON.stringify(json_data_d, null, 2));
+                    }
+                };
+                xmlhttp_d[id].send();
+
+                xmlhttp_t = [],
+                id;
+                xmlhttp_t[id] = new ActiveXObject("Microsoft.XMLHTTP");
+                url2 = "http://opml.radiotime.com/Browse.ashx?c=playlist&id=" + guideid + "&partnerId=1&render=json";
+                xmlhttp_t[id].open("GET", url2);
+                xmlhttp_t[id].setRequestHeader('User-Agent', "spider_monkey_panel_footuner");
+                xmlhttp_t[id].onreadystatechange = function () {
+                    if (xmlhttp_t[id].readyState === 4 && xmlhttp_t[id].status === 200) {
+                        let json_data_t = _jsonParse(xmlhttp_t[id].responseText);
+                        utils.WriteTextFile(filename_tracks_json, JSON.stringify(json_data_t, null, 2));
+                    }
+                };
+                xmlhttp_t[id].send();
+
+                if (logo) {
+                    cmd = "cscript //nologo \"" + download_vbs + "\" \"" + logo.replace(/\?.*/g, "") + "\" \"" + imagefile + "." + logoext + "\"";
+                    WshShell.Run(cmd, 0, false);
+
+                    counter = 0;
+
+                    let timer2 = setInterval(() => {
+                            counter++;
+                            statustext4 = " (logo) " + (15 - counter);
+                            window.NotifyOthers("tunein", statustext + statustext2 + statustext3 + statustext4);
+
+                            if (utils.IsFile(imagefile + "." + logoext)) {
+                                clearInterval(timer2);
+                                statustext4 = " (logo) \u221A ";
+                                window.NotifyOthers("tunein", statustext + statustext2 + statustext3 + statustext4);
+                                add_mtag();
+
+                            } else if (counter == 15) {
+                                clearInterval(timer2);
+                                statustext4 = " (logo) x";
+                                console.log(window.Name + " : Logo download failed. URL: " + logo);
+                                window.NotifyOthers("tunein", statustext + statustext2 + statustext3 + statustext4);
+                                add_mtag();
+                            }
+
+                        }, 1000);
+                } else {
+                    statustext4 = " (logo) N/A ";
+                    window.NotifyOthers("tunein", statustext + statustext2 + statustext3 + statustext4);
+                    add_mtag();
+
                 }
-            };
-            xmlhttp_t[id].send();
 
-            urls2add.push(filename);
+                function add_mtag() {
+                    cmd = "\"" + fb.FoobarPath + "foobar2000.exe" + "\"" + " /run_main:\"View/Switch to playlist/New Stations\" /add /immediate " + "\"" + filename + "\"";
+                    WshShell.Run(cmd, 0, false);
+					
+                    resolve();
+                }
 
-        } else {
-            fso.DeleteFile(tempfilename);
-            urls2add.push(filename);
+            } else {
+                fso.DeleteFile(tempfilename);
+                console.log(window.Name + " : " + "Unable to create mtag");
+                statustext = "Process Failed... " + url + "\n";
+                statustext4 = "Unable to create mtag ";
+                window.NotifyOthers("tunein", statustext + statustext4);
+                return;
+            }
+
         }
-    } else {
-        fso.DeleteFile(tempfilename);
-        console.log(window.Name + " : " + "Unable to create mtag");
-        statustext = "Unable to create mtag ";
-        window.NotifyOthers("tunein", statustext);
-        return;
-    }
-    statustext = "Idle.";
-    window.NotifyOthers("mtagger", statustext);
+    })
 }
 
 if (_isFile(tunein_genres_file) == false || _fileExpired(tunein_genres_file, ONE_DAY))
