@@ -263,7 +263,7 @@ function live3652mtag(station) {
     let clean_name;
 
     let cmd = "\"" + live3652mtag_bat + "\"" + " " + "\"" + station.url + "\"" + " " + "\"" + tempfilename + "\"" + " " + streamid + " \"" + ffprobe_exe + "\" \"" + jq_exe + "\"" + " " + "\"" + _batEscape(station.name) + "\"" + " " + station.mount_id;
-    console.log(window.Name + " : " + cmd);
+    //console.log(window.Name + " : " + cmd);
     WshShell.Run(cmd, 0, false);
 
     let counter = 0;

@@ -421,7 +421,7 @@ function crb2mtag(station) {
     let clean_name;
 
     let cmd = "\"" + crb2mtag_bat + "\"" + " " + "\"" + station.url + "\"" + " " + "\"" + tempfilename + "\"" + " " + streamid + " \"" + ffprobe_exe + "\" \"" + jq_exe + "\"" + " " + "\"" + _batEscape(station.name) + "\"" + " " + station.stationuuid;
-    console.log(cmd);
+    //console.log(cmd);
 	WshShell.Run(cmd, 0, false);
 
     let counter = 0;
@@ -507,7 +507,7 @@ function crb2mtag(station) {
                 logoext = logoext.split('.').pop();
 
                 cmd = "cscript //nologo \"" + download_vbs + "\" \"" + station.logo + "\" \"" + imagefile + "." + logoext + "\"";
-				console.log(cmd);
+				//console.log(cmd);
                 WshShell.Run(cmd, 0, false);
 
                 counter = 0;

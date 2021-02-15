@@ -184,7 +184,6 @@ function ic_process_menu(selection, title, method) {
 
 function ic_process_menu_next_prev(counter, title) {
     let _pmenu = window.CreatePopupMenu();
-    console.log("xx");
     _pmenu.AppendMenuItem(MF_GRAYED, 0, (title ? title : "") + " (Total : " + ic_stations_results.length + ") " + (counter * 100) + '+');
     _pmenu.AppendMenuSeparator();
 

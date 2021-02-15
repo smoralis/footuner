@@ -479,13 +479,13 @@ function process_tune(selection, name, logo, guideid, item) {
                     }
 
                     if (json_data.body[i].playlist_type == "pls") {
-                        let cmd = ("cscript //nologo \"" + download_vbs + "\" \"" + json_data.body[i].url + "\" \"" + temp_folder + plscount + ".pls" + "\"");
+                        let cmd = "cscript //nologo \"" + download_vbs + "\" \"" + json_data.body[i].url + "\" \"" + temp_folder + plscount + ".pls" + "\"";
                         WshShell.Run(cmd, 0, true);
                         plscount++;
                     }
 
                     if (json_data.body[i].playlist_type == "m3u") {
-                        let cmd = ("cscript //nologo \"" + download_vbs + "\" \"" + json_data.body[i].url + "\" \"" + temp_folder + m3ucount + ".m3u" + "\""); ;
+                        let cmd = "cscript //nologo \"" + download_vbs + "\" \"" + json_data.body[i].url + "\" \"" + temp_folder + m3ucount + ".m3u" + "\"";
                         WshShell.Run(cmd, 0, true);
                         m3ucount++;
                     }
@@ -531,6 +531,8 @@ function process_tune(selection, name, logo, guideid, item) {
                         window.NotifyOthers("tunein", statustext);
                         await tunein2mtag(i, urls[i], name, logo, guideid, item);
                     }
+                    statustext = "Idle.";
+                    window.NotifyOthers("tunein", statustext);
                 }
 
                 includeurls(urls);
@@ -554,38 +556,37 @@ function tunein2mtag(i, url, name, logo, guideid, item) {
         let logoext = logo.split('?')[0];
         logoext = logoext.split('.').pop();
 
-        utils.WriteTextFile(tempfilename, "");
-
         let cmd = "\"" + tunein2mtag_bat + "\"" + " " + "\"" + url + "\"" + " " + "\"" + tempfilename + "\"" + " " + streamid + " \"" + ffprobe_exe + "\" \"" + jq_exe + "\" " + "\"" + _batEscape(name) + "\"" + " " + guideid + " " + item;
-        console.log(window.Name + " : " + cmd);
+        //console.log(window.Name + " : " + cmd);
         WshShell.Run(cmd, 0, false);
 
         let counter = 0;
 
         let timer = setInterval(() => {
-                counter++;
-                statustext2 = "(ffprobe) " + (15 - counter);
+            counter++;
+            statustext2 = "(ffprobe) " + (15 - counter);
+            window.NotifyOthers("tunein", statustext + statustext2);
+            try {
+                let ffprobe_file = fso.OpenTextFile(tempfilename, 8);
+                ffprobe_file.Close();
+                clearInterval(timer);
+                statustext2 = "(ffprobe) \u221A ";
                 window.NotifyOthers("tunein", statustext + statustext2);
-                try {
-                    let ffprobe_file = fso.OpenTextFile(tempfilename, 8);
-                    ffprobe_file.Close();
+                mtag_it();
+            } catch (err) {
+                if (counter == 15) {
                     clearInterval(timer);
-                    statustext2 = "(ffprobe) \u221A ";
+                    let cmd = 'taskkill.exe /F /IM ffprobe.exe';
+                    WshShell.Run(cmd, 0, true);
+                    if (utils.FileExists(tempfilename))
+                        fso.DeleteFile(tempfilename);
+                    statustext = "Process Failed... " + url + "\n";
+                    statustext2 = "Failed to ffprobe " + url;
                     window.NotifyOthers("tunein", statustext + statustext2);
-                    mtag_it();
-                } catch (err) {
-                    if (counter == 15) {
-                        clearInterval(timer);
-                        let cmd = 'taskkill.exe /F /IM ffprobe.exe';
-                        WshShell.Run(cmd, 0, true);
-                        if (utils.FileExists(tempfilename))
-                            fso.DeleteFile(tempfilename);
-                        statustext = "Process Failed... " + url + "\n";
-                        statustext2 = "Failed to ffprobe " + url;
-                        window.NotifyOthers("tunein", statustext + statustext2);
-                    }
+                    resolve();
                 }
-            }, 1000);
+            }
+        }, 1000);
         function mtag_it() {
             try {
                 let temptagarray = utils.ReadTextFile(tempfilename);
@@ -597,6 +598,7 @@ function tunein2mtag(i, url, name, logo, guideid, item) {
                 statustext3 = "Failed to mtag " + url;
                 window.NotifyOthers("tunein", statustext + statustext3);
                 console.log(window.Name + " : " + err);
+                resolve();
             }
             if (response) {
                 statustext3 = "(mtag) ... ";
@@ -650,25 +652,25 @@ function tunein2mtag(i, url, name, logo, guideid, item) {
                     counter = 0;
 
                     let timer2 = setInterval(() => {
-                            counter++;
-                            statustext4 = " (logo) " + (15 - counter);
+                        counter++;
+                        statustext4 = " (logo) " + (15 - counter);
+                        window.NotifyOthers("tunein", statustext + statustext2 + statustext3 + statustext4);
+
+                        if (utils.IsFile(imagefile + "." + logoext)) {
+                            clearInterval(timer2);
+                            statustext4 = " (logo) \u221A ";
                             window.NotifyOthers("tunein", statustext + statustext2 + statustext3 + statustext4);
+                            add_mtag();
 
-                            if (utils.IsFile(imagefile + "." + logoext)) {
-                                clearInterval(timer2);
-                                statustext4 = " (logo) \u221A ";
-                                window.NotifyOthers("tunein", statustext + statustext2 + statustext3 + statustext4);
-                                add_mtag();
+                        } else if (counter == 15) {
+                            clearInterval(timer2);
+                            statustext4 = " (logo) x";
+                            console.log(window.Name + " : Logo download failed. URL: " + logo);
+                            window.NotifyOthers("tunein", statustext + statustext2 + statustext3 + statustext4);
+                            add_mtag();
+                        }
 
-                            } else if (counter == 15) {
-                                clearInterval(timer2);
-                                statustext4 = " (logo) x";
-                                console.log(window.Name + " : Logo download failed. URL: " + logo);
-                                window.NotifyOthers("tunein", statustext + statustext2 + statustext3 + statustext4);
-                                add_mtag();
-                            }
-
-                        }, 1000);
+                    }, 1000);
                 } else {
                     statustext4 = " (logo) N/A ";
                     window.NotifyOthers("tunein", statustext + statustext2 + statustext3 + statustext4);
@@ -690,7 +692,7 @@ function tunein2mtag(i, url, name, logo, guideid, item) {
                 statustext = "Process Failed... " + url + "\n";
                 statustext4 = "Unable to create mtag ";
                 window.NotifyOthers("tunein", statustext + statustext4);
-                return;
+                resolve();
             }
 
         }
