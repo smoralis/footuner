@@ -36,6 +36,9 @@ function icecast_main_menu() {
         window.NotifyOthers("tunein", statustext);
         return;
     }
+    statustext = "Icecast Main Menu....  ";
+    window.NotifyOthers("tunein", statustext);
+
     let json_data = _jsonParse(utils.ReadTextFile(ic_stations));
     let ic_stations_j = _jsonParse(JSON.stringify(json_data[0]));
     let items = ic_stations_j.length;
