@@ -65,33 +65,37 @@ function on_mouse_wheel(s) {
 function save_history(star) {
     if (fb.IsPlaying) {
         let ts = new Date();
-		let fav = false;
+        let fav = false;
         let strContents = utils.ReadTextFile(myhistory);
-        let np_tf_artist = panel.tf("$ifequal(%stream_reverse%,1,%title%,%artist%)").trim();
-        let np_tf_title = panel.tf("$ifequal(%stream_reverse%,1,%artist%,%title%)").trim();
-        let np_tf_stream_name = panel.tf("$if3([%stream_tunein_name%],[%stream_crb_name%],[%stream_live365_name%],[%stream_ffprobe_name%],[$info(@)],[%path%])").trim();
-        let strNewContents = "[" + ts.toLocaleString() + "] - [" + np_tf_stream_name + "] " + star  + np_tf_artist + " - " + np_tf_title + "\n" + strContents.replace(/^(?=\n)$|^\s*|\s*$|\n\n+/gm, "");
-        utils.WriteTextFile(myhistory, strNewContents);
-        text.filename = '';
-        panel.item_focus_change();
-		
-		//json file
-        let arr = [];
-        let json = utils.ReadTextFile(myhistory_json);
-        try {
-            let obj = JSON.parse(json);
-            for (let i = 0; i < obj.length; i++) {
-                arr.push(obj[i]);
-        }} catch (e) {}
-		if (star) fav = true;
-		    arr.push({
-            'date': ts.toLocaleString(),
-            'station': np_tf_stream_name,
-            'artist': np_tf_artist,
-            'title': np_tf_title,
-            'star': fav
-        });
-        utils.WriteTextFile(myhistory_json, JSON.stringify(arr, null, 2));
+        let np_tf_artist = fb.TitleFormat("$ifequal(%stream_reverse%,1,[%title%],[%artist%])").Eval().trim();
+        let np_tf_title = fb.TitleFormat("$ifequal(%stream_reverse%,1,[%artist%],[%title%])").Eval().trim();
+        let np_tf_stream_name = fb.TitleFormat("$if3([%stream_tunein_name%],[%stream_crb_name%],[%stream_live365_name%],[%stream_ffprobe_name%],[$info(@)],[%path%])").Eval().trim();
+        let strNewContents = "[" + ts.toLocaleString() + "] - [" + np_tf_stream_name + "] " + star + np_tf_artist + " - " + np_tf_title + "\n" + strContents.replace(/^(?=\n)$|^\s*|\s*$|\n\n+/gm, "");
+        if (np_tf_artist && np_tf_title) {
+            utils.WriteTextFile(myhistory, strNewContents);
+            text.filename = '';
+            panel.item_focus_change();
+
+            //json file
+            let arr = [];
+            let json = utils.ReadTextFile(myhistory_json);
+            try {
+                let obj = JSON.parse(json);
+                for (let i = 0; i < obj.length; i++) {
+                    arr.push(obj[i]);
+                }
+            } catch (e) {}
+            if (star)
+                fav = true;
+            arr.push({
+                'date': ts.toLocaleString(),
+                'station': np_tf_stream_name,
+                'artist': np_tf_artist,
+                'title': np_tf_title,
+                'star': fav
+            });
+            utils.WriteTextFile(myhistory_json, JSON.stringify(arr, null, 2));
+        }
     }
 }
 
