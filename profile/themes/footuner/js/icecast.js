@@ -272,7 +272,7 @@ function ic2mtag(url) {
                 if (counter == 15) {
                     clearInterval(timer);
                     let cmd = 'taskkill.exe /F /IM ffprobe.exe';
-                    WshShell.Run(cmd, 0, false);
+                    WshShell.Run(cmd, 0, true);
                     if (utils.FileExists(tempfilename))
                         fso.DeleteFile(tempfilename);
                     statustext = "Process Failed... " + url + "\n";
