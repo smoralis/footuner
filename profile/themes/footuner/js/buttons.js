@@ -69,7 +69,27 @@ function buttonss() {
     buttons.buttons.add2mtag = new _button(bs * 1.5, 0, bs, bs, {
             normal: add_ico
         }, (x, y) => {
-            add2mtag();
+            let url;
+            let url_input = "";
+            try {
+                statustext = "Add URL & Convert to mtag - Waiting for input.";
+                window.NotifyOthers("mtagger", statustext);
+                url_input = utils.InputBox(window.ID, "Enter URL", "Add URL & Convert to mtag", "", true);
+                url = url_input;
+
+            } catch (e) {
+                statustext = "Add Canceled.";
+                window.NotifyOthers("mtagger", statustext);
+                return;
+            }
+
+            if (!url.match(urlreg)) {
+                fb.ShowPopupMessage("This is not a URL", "mtagger Error");
+                statustext = "Idle.";
+                window.NotifyOthers("mtagger", statustext);
+                return;
+            }
+            url2mtag(url);
         }, 'Add Location and Convert to mtag');
     buttons.buttons.stop = new _button(bs * 3, 0, bs, bs, {
             normal: stop_ico
@@ -101,10 +121,11 @@ function buttonss() {
         }, (x, y) => {
             let streamurl = fb.TitleFormat("[%stream_ffprobe_webpage%]").Eval();
             if (streamurl) {
-				if  (streamurl.match(urlreg))
-                WshShell.Run(streamurl);
-			else WshShell.Run("https://" + streamurl);
-			}
+                if (streamurl.match(urlreg))
+                    WshShell.Run(streamurl);
+                else
+                    WshShell.Run("https://" + streamurl);
+            }
         }, 'Open Webpage');
     buttons.buttons.delete = new _button(bs * 12, 0, bs, bs, {
             normal: delete_ico
@@ -116,82 +137,109 @@ function buttonss() {
         }, (x, y) => {
             convert();
         }, 'Convert URL(s) to M-TAG(s)');
-	buttons.buttons.convert2 = new _button(bs * 15, 0, bs, bs, {
+    buttons.buttons.convert2 = new _button(bs * 15, 0, bs, bs, {
             normal: convert_ico
         }, (x, y) => {
             convert2();
         }, 'Convert to M3U');
 }
 
-function add2mtag() {
-    let url;
-    let url_input = "";
-    try {
-        statustext = "Add URL & Convert to mtag - Waiting for input.";
-        window.NotifyOthers("tunein", statustext);
-        url_input = utils.InputBox(window.ID, "Enter URL", "Add URL & Convert to mtag", "", true);
-        url = url_input;
+function url2mtag(url) {
 
-        statustext = "Processing... " + url;
-        window.NotifyOthers("tunein", statustext);
-		
-        let response;
-        let stream_name_ffprobe;
-        let clean_name;
+    statustext = "Processing... " + url + "\n";
+    window.NotifyOthers("mtagger", statustext);
 
-        if (url.match(urlreg)) {
-            let streamid = ('0000000000' + crc32(url)).slice(-10);
-            let tempfilename = temp_folder + "!temp.tags";
+    let response;
+    let stream_name_ffprobe;
+    let clean_name;
 
-            utils.WriteTextFile(tempfilename, "");
+    let streamid = ('0000000000' + crc32(url)).slice(-10);
+    let tempfilename = temp_folder + "!temp" + streamid + ".tags";
 
-            let cmd = url2mtag_bat + " " + "\"" + url + "\"" + " " + "\"" + tempfilename + "\"" + " " + streamid + " \"" + ffprobe_exe + "\" \"" + jq_exe + "\"";
-            console.log(cmd);
-            WshShell.Run(cmd, 0, true);
+    utils.WriteTextFile(tempfilename, "");
 
+    let cmd = url2mtag_bat + " " + "\"" + url + "\"" + " " + "\"" + tempfilename + "\"" + " " + streamid + " \"" + ffprobe_exe + "\" \"" + jq_exe + "\"";
+    console.log(cmd);
+    WshShell.Run(cmd, 0, false);
+
+    let counter = 0;
+
+    let timer = setInterval(() => {
+            counter++;
+            statustext2 = "(ffprobe) " + (15 - counter);
+            window.NotifyOthers("mtagger", statustext + statustext2);
             try {
-                let temptagarray = utils.ReadTextFile(tempfilename);
-                let json_data = _jsonParse(temptagarray);
-                json_data = json_data[0];
-                response = json_data["@"];
-                stream_name_ffprobe = json_data["STREAM_FFPROBE_NAME"];
+                let ffprobe_file = fso.OpenTextFile(tempfilename, 8);
+                ffprobe_file.Close();
+                clearInterval(timer);
+                statustext2 = "(ffprobe) \u221A ";
+                window.NotifyOthers("mtagger", statustext + statustext2);
+                mtag_it();
             } catch (err) {
-                console.log(window.Name + " : " + err);
-            }
-
-            if (response) {
-                statustext = "Processing " + url;
-                window.NotifyOthers("tunein", statustext);
-
-                if (!stream_name_ffprobe) {
-                    clean_name = "Unknown"
-                } else {
-                    clean_name = _fbSanitise(stream_name_ffprobe);
+                if (counter == 15) {
+                    clearInterval(timer);
+                    let cmd = 'taskkill.exe /F /IM ffprobe.exe';
+                    WshShell.Run(cmd, 0, false);
+                    if (utils.FileExists(tempfilename))
+                        fso.DeleteFile(tempfilename);
+                    statustext = "Process Failed... " + url + "\n";
+                    statustext2 = "Failed to ffprobe " + url;
+                    window.NotifyOthers("mtagger", statustext + statustext2);
                 }
-
-                let folder = mtags_folder + clean_name + " - " + streamid + "\\";
-                if (!fso.FolderExists(folder))
-                    fso.CreateFolder(folder);
-                let filename = folder + clean_name + " - " + streamid + ".tags";
-                let mtag = utils.ReadTextFile(tempfilename);
-                utils.WriteTextFile(filename, he.decode(mtag));
-                fso.DeleteFile(tempfilename);
-                let cmd = "\"" + fb.FoobarPath + "foobar2000.exe" + "\"" + " /run_main:\"View/Switch to playlist/New Stations\" /add /immediate " + "\"" + filename + "\"";
-                WshShell.Run(cmd, 0, true);
-            } else {
-                fso.DeleteFile(tempfilename);
             }
-        } else {
-            fb.ShowPopupMessage("This is not a URL", "mtagger Error");
+        }, 1000);
+
+    function mtag_it() {
+
+        try {
+            let temptagarray = utils.ReadTextFile(tempfilename);
+            let json_data = _jsonParse(temptagarray);
+            json_data = json_data[0];
+            response = json_data["@"];
+            stream_name_ffprobe = json_data["STREAM_FFPROBE_NAME"];
+        } catch (err) {
+            statustext = "Process Failed... " + url + "\n";
+            statustext3 = "Failed to mtag " + url;
+            window.NotifyOthers("mtagger", statustext + statustext3);
+            console.log(window.Name + " : " + err);
         }
-    } catch (e) {
-        statustext = "Add Canceled.";
-        window.NotifyOthers("tunein", statustext);
+
+        if (response) {
+            statustext3 = "(mtag) ... ";
+            window.NotifyOthers("mtagger", statustext + statustext2 + statustext3);
+
+            if (!stream_name_ffprobe) {
+                clean_name = "Unknown"
+            } else {
+                clean_name = _fbSanitise(stream_name_ffprobe);
+            }
+
+            let folder = mtags_folder + clean_name + " - " + streamid + "\\";
+            if (!fso.FolderExists(folder))
+                fso.CreateFolder(folder);
+            let filename = folder + clean_name + " - " + streamid + ".tags";
+            let mtag = utils.ReadTextFile(tempfilename);
+            utils.WriteTextFile(filename, he.decode(mtag));
+            fso.DeleteFile(tempfilename);
+
+            statustext3 = " (mtag) \u221A ";
+            window.NotifyOthers("mtagger", statustext + statustext2 + statustext3);
+
+            let cmd = "\"" + fb.FoobarPath + "foobar2000.exe" + "\"" + " /run_main:\"View/Switch to playlist/New Stations\" /add /immediate " + "\"" + filename + "\"";
+            WshShell.Run(cmd, 0, false);
+
+            statustext = "Completed... " + url + "\n";
+            statustext4 = " (add) \u221A ";
+            window.NotifyOthers("mtagger", statustext + statustext2 + statustext3 + statustext4);
+
+        } else {
+            fso.DeleteFile(tempfilename);
+            statustext = "Process Failed... " + url + "\n";
+            statustext4 = "Unable to create mtag ";
+            window.NotifyOthers("mtagger", statustext + statustext4);
+        }
+
     }
-    let n_timer = setTimeout(() => {
-            statustext = "Idle.";
-            window.NotifyOthers("tunein", statustext);
-        }, 2000);
 }
 
 function convert() {
@@ -207,12 +255,21 @@ function convert() {
     } else {
         let aplidx = plman.ActivePlaylist;
         plman.RemovePlaylistSelection(aplidx);
-        for (let i = 0; i < count; i++) {
-            let gmetadb = items[i];
-            statustext = "Processing .... Wait for Idle !!! (" + (i + 1) + " of " + count + ")";
+
+        async function includefiles() {
+            for (let i = 0; i < count; i++) {
+                let gmetadb = items[i];
+                statustext = "Processing .... (" + (i + 1) + " of " + count + ") " + fb.TitleFormat("%path%").EvalWithMetadb(gmetadb) + "\n";
+                window.NotifyOthers("mtagger", statustext);
+                await tag_multiple(gmetadb);
+
+            }
+            statustext = "Idle.";
             window.NotifyOthers("mtagger", statustext);
-            tag_multiple(gmetadb);
         }
+
+        includefiles();
+
     }
     statustext = "Idle.";
     window.NotifyOthers("mtagger", statustext);
@@ -221,41 +278,74 @@ function convert() {
 function convert2() {
     let items = plman.GetPlaylistSelectedItems(plman.ActivePlaylist);
     let count = items.Count;
-        for (let i = 0; i < count; i++) {
-            let gmetadb = items[i];
-            statustext = "Processing .... Wait for Idle !!!";
-            window.NotifyOthers("mtagger", statustext);
-            mtag2m3u(gmetadb);
-        }
+    for (let i = 0; i < count; i++) {
+        let gmetadb = items[i];
+        statustext = "Processing .... Wait for Idle !!!";
+        window.NotifyOthers("mtagger", statustext);
+        mtag2m3u(gmetadb);
+    }
     statustext = "Idle.";
     window.NotifyOthers("mtagger", statustext);
 }
 
 function mtag2m3u(gmetadb) {
-	let url = fb.TitleFormat("$if3([$info(@)],[%stream_url%],[%path%])").EvalWithMetadb(gmetadb);
-	let streamid = fb.TitleFormat("[stream_id_crc32]").EvalWithMetadb(gmetadb);
-	let filename = fb.TitleFormat("$if3([%stream_tunein_name%],[%stream_crb_name%],[%stream_ffprobe_name%],[$info(@)],[%path%])").EvalWithMetadb(gmetadb);
-	if (!streamid) streamid = ('0000000000' + crc32(url)).slice(-10);
-	let tempfilename = m3u_folder + _fbSanitise(filename) + " - " + streamid + ".m3u";
-	utils.WriteTextFile(tempfilename, "#EXTM3U\n#EXTINF:-1," + _fbSanitise(filename) + "\n"+ url);
-	console.log("Created " + tempfilename);
+    let url = fb.TitleFormat("$if3([$info(@)],[%stream_url%],[%path%])").EvalWithMetadb(gmetadb);
+    let streamid = fb.TitleFormat("[stream_id_crc32]").EvalWithMetadb(gmetadb);
+    let filename = fb.TitleFormat("$if3([%stream_mtagger_name%],[%stream_crb_name%],[%stream_ffprobe_name%],[$info(@)],[%path%])").EvalWithMetadb(gmetadb);
+    if (!streamid)
+        streamid = ('0000000000' + crc32(url)).slice(-10);
+    let tempfilename = m3u_folder + _fbSanitise(filename) + " - " + streamid + ".m3u";
+    utils.WriteTextFile(tempfilename, "#EXTM3U\n#EXTINF:-1," + _fbSanitise(filename) + "\n" + url);
+    console.log("Created " + tempfilename);
 }
 
 function tag_single(gmetadb) {
     let url = fb.TitleFormat("%path%").EvalWithMetadb(gmetadb);
+
+    statustext = "Processing... " + url + "\n";
+    window.NotifyOthers("mtagger", statustext);
+
     let response;
     let stream_name_ffprobe;
     let clean_name;
 
-    if (url.match(urlreg)) {
-        let streamid = fb.TitleFormat("$num($crc32(%path%),10)").EvalWithMetadb(gmetadb);
-        let tempfilename = temp_folder + "!temp.tags";
+    let streamid = ('0000000000' + crc32(url)).slice(-10);
+    let tempfilename = temp_folder + "!temp" + streamid + ".tags";
 
-        utils.WriteTextFile(tempfilename, "");
+    utils.WriteTextFile(tempfilename, "");
 
-        let cmd = url2mtag_bat + " " + "\"" + url + "\"" + " " + "\"" + tempfilename + "\"" + " " + streamid + " \"" + ffprobe_exe + "\" \"" + jq_exe + "\"";
-        console.log(cmd);
-        WshShell.Run(cmd, 0, true);
+    let cmd = url2mtag_bat + " " + "\"" + url + "\"" + " " + "\"" + tempfilename + "\"" + " " + streamid + " \"" + ffprobe_exe + "\" \"" + jq_exe + "\"";
+    console.log(cmd);
+    WshShell.Run(cmd, 0, false);
+
+    let counter = 0;
+
+    let timer = setInterval(() => {
+            counter++;
+            statustext2 = "(ffprobe) " + (15 - counter);
+            window.NotifyOthers("mtagger", statustext + statustext2);
+            try {
+                let ffprobe_file = fso.OpenTextFile(tempfilename, 8);
+                ffprobe_file.Close();
+                clearInterval(timer);
+                statustext2 = "(ffprobe) \u221A ";
+                window.NotifyOthers("mtagger", statustext + statustext2);
+                mtag_it();
+            } catch (err) {
+                if (counter == 15) {
+                    clearInterval(timer);
+                    let cmd = 'taskkill.exe /F /IM ffprobe.exe';
+                    WshShell.Run(cmd, 0, false);
+                    if (utils.FileExists(tempfilename))
+                        fso.DeleteFile(tempfilename);
+                    statustext = "Process Failed... " + url + "\n";
+                    statustext2 = "Failed to ffprobe " + url;
+                    window.NotifyOthers("mtagger", statustext + statustext2);
+                }
+            }
+        }, 1000);
+
+    function mtag_it() {
 
         try {
             let temptagarray = utils.ReadTextFile(tempfilename);
@@ -264,10 +354,16 @@ function tag_single(gmetadb) {
             response = json_data["@"];
             stream_name_ffprobe = json_data["STREAM_FFPROBE_NAME"];
         } catch (err) {
+            statustext = "Process Failed... " + url + "\n";
+            statustext3 = "Failed to mtag " + url;
+            window.NotifyOthers("mtagger", statustext + statustext3);
             console.log(window.Name + " : " + err);
         }
 
         if (response) {
+            statustext3 = "(mtag) ... ";
+            window.NotifyOthers("mtagger", statustext + statustext2 + statustext3);
+
             if (!stream_name_ffprobe) {
                 clean_name = "Unknown"
             } else {
@@ -281,70 +377,140 @@ function tag_single(gmetadb) {
             let mtag = utils.ReadTextFile(tempfilename);
             utils.WriteTextFile(filename, he.decode(mtag));
             fso.DeleteFile(tempfilename);
+
+            statustext3 = " (mtag) \u221A ";
+            window.NotifyOthers("mtagger", statustext + statustext2 + statustext3);
+
             let aplidx = plman.ActivePlaylist;
             let idxa = plman.GetPlaylistFocusItemIndex(aplidx);
             plman.RemovePlaylistSelection(aplidx);
+
             let cmd = "\"" + fb.FoobarPath + "foobar2000.exe" + "\"" + "/add /immediate " + "\"" + filename + "\"";
-            WshShell.Run(cmd, 0, true);
+            WshShell.Run(cmd, 0, false);
+
+            statustext = "Completed... " + url + "\n";
+            statustext4 = " (add) \u221A ";
+            window.NotifyOthers("mtagger", statustext + statustext2 + statustext3 + statustext4);
+
             window.SetTimeout(function () {
-                let idxa2 = plman.GetPlaylistFocusItemIndex(aplidx);
                 let selection = plman.GetPlaylistSelectedItems(aplidx);
                 plman.InsertPlaylistItems(aplidx, idxa, selection);
                 plman.RemovePlaylistSelection(aplidx);
                 plman.SetPlaylistSelectionSingle(aplidx, idxa, true);
                 plman.EnsurePlaylistItemVisible(aplidx, idxa);
             }, 100);
+
         } else {
             fso.DeleteFile(tempfilename);
+            statustext = "Process Failed... " + url + "\n";
+            statustext4 = "Unable to create mtag ";
+            window.NotifyOthers("mtagger", statustext + statustext4);
         }
-    } else {
-        fb.ShowPopupMessage("This is not a URL", "mtagger Error");
+
     }
+
 }
+
 function tag_multiple(gmetadb) {
-    let url = fb.TitleFormat("%path%").EvalWithMetadb(gmetadb);
-    let response;
-    let stream_name_ffprobe;
-    let clean_name;
+    return new Promise(resolve => {
 
-    if (url.match(urlreg)) {
-        let streamid = fb.TitleFormat("$num($crc32(%path%),10)").EvalWithMetadb(gmetadb);
-        let tempfilename = temp_folder + "!temp.tags";
+        let url = fb.TitleFormat("%path%").EvalWithMetadb(gmetadb);
+        let response;
+        let stream_name_ffprobe;
+        let clean_name;
+
+        let streamid = ('0000000000' + crc32(url)).slice(-10);
+        let tempfilename = temp_folder + "!temp" + streamid + ".tags";
+
         utils.WriteTextFile(tempfilename, "");
+
         let cmd = url2mtag_bat + " " + "\"" + url + "\"" + " " + "\"" + tempfilename + "\"" + " " + streamid + " \"" + ffprobe_exe + "\" \"" + jq_exe + "\"";
-        WshShell.Run(cmd, 0, true);
+        console.log(cmd);
+        WshShell.Run(cmd, 0, false);
 
-        try {
-            let temptagarray = utils.ReadTextFile(tempfilename);
-            let json_data = _jsonParse(temptagarray);
-            json_data = json_data[0];
-            response = json_data["@"];
-            stream_name_ffprobe = json_data["STREAM_FFPROBE_NAME"];
-        } catch (err) {
-            console.log(window.Name + " : " + err);
-        }
+        let counter = 0;
 
-        if (response) {
-            if (!stream_name_ffprobe) {
-                clean_name = "Unknown"
-            } else {
-                clean_name = _fbSanitise(stream_name_ffprobe);
+        let timer = setInterval(() => {
+                counter++;
+                statustext2 = "(ffprobe) " + (15 - counter);
+                window.NotifyOthers("mtagger", statustext + statustext2);
+                try {
+                    let ffprobe_file = fso.OpenTextFile(tempfilename, 8);
+                    ffprobe_file.Close();
+                    clearInterval(timer);
+                    statustext2 = "(ffprobe) \u221A ";
+                    window.NotifyOthers("mtagger", statustext + statustext2);
+                    mtag_it();
+                } catch (err) {
+                    if (counter == 15) {
+                        clearInterval(timer);
+                        let cmd = 'taskkill.exe /F /IM ffprobe.exe';
+                        WshShell.Run(cmd, 0, false);
+                        if (utils.FileExists(tempfilename))
+                            fso.DeleteFile(tempfilename);
+                        statustext = "Process Failed... " + url + "\n";
+                        statustext2 = "Failed to ffprobe " + url;
+                        window.NotifyOthers("mtagger", statustext + statustext2);
+                        resolve();
+                    }
+                }
+            }, 1000);
+
+        function mtag_it() {
+
+            try {
+                let temptagarray = utils.ReadTextFile(tempfilename);
+                let json_data = _jsonParse(temptagarray);
+                json_data = json_data[0];
+                response = json_data["@"];
+                stream_name_ffprobe = json_data["STREAM_FFPROBE_NAME"];
+            } catch (err) {
+                statustext = "Process Failed... " + url + "\n";
+                statustext3 = "Failed to mtag " + url;
+                window.NotifyOthers("mtagger", statustext + statustext3);
+                console.log(window.Name + " : " + err);
+                resolve();
             }
-            let folder = mtags_folder + clean_name + " - " + streamid + "\\";
-            if (!fso.FolderExists(folder))
-                fso.CreateFolder(folder);
-            let filename = folder + clean_name + " - " + streamid + ".tags"; ;
-            let mtag = utils.ReadTextFile(tempfilename);
-            utils.WriteTextFile(filename, he.decode(mtag));
-            fso.DeleteFile(tempfilename);
-            let cmd = "\"" + fb.FoobarPath + "foobar2000.exe" + "\"" + "/add /immediate " + "\"" + filename + "\"";
-            WshShell.Run(cmd, 0, true);
-        } else {
-            fso.DeleteFile(tempfilename);
+
+            if (response) {
+                statustext3 = "(mtag) ... ";
+                window.NotifyOthers("mtagger", statustext + statustext2 + statustext3);
+
+                if (!stream_name_ffprobe) {
+                    clean_name = "Unknown"
+                } else {
+                    clean_name = _fbSanitise(stream_name_ffprobe);
+                }
+
+                let folder = mtags_folder + clean_name + " - " + streamid + "\\";
+                if (!fso.FolderExists(folder))
+                    fso.CreateFolder(folder);
+                let filename = folder + clean_name + " - " + streamid + ".tags";
+                let mtag = utils.ReadTextFile(tempfilename);
+                utils.WriteTextFile(filename, he.decode(mtag));
+                fso.DeleteFile(tempfilename);
+
+                statustext3 = " (mtag) \u221A ";
+                window.NotifyOthers("mtagger", statustext + statustext2 + statustext3);
+
+                let cmd = "\"" + fb.FoobarPath + "foobar2000.exe" + "\"" + "/add /immediate " + "\"" + filename + "\"";
+                WshShell.Run(cmd, 0, false);
+
+                statustext = "Completed... " + url + "\n";
+                statustext4 = " (add) \u221A ";
+                window.NotifyOthers("mtagger", statustext + statustext2 + statustext3 + statustext4);
+                resolve();
+
+            } else {
+                fso.DeleteFile(tempfilename);
+                statustext = "Process Failed... " + url + "\n";
+                statustext4 = "Unable to create mtag ";
+                window.NotifyOthers("mtagger", statustext + statustext4);
+                resolve();
+            }
         }
-    } else {
-        fb.ShowPopupMessage("This is not a URL", "mtagger Error");
-    }
+
+    })
 }
 
 function imagefront() {
@@ -358,6 +524,7 @@ function deletefolder() {
     let count = items.Count;
     let aplidx = plman.ActivePlaylist;
     plman.RemovePlaylistSelection(aplidx);
+
     for (let i = 0; i < count; i++) {
         let gmetadb = items[i];
         let folder2delete = fb.TitleFormat("$directory_path(%path%)").EvalWithMetadb(gmetadb);
