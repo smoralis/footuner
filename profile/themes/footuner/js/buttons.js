@@ -156,8 +156,6 @@ function url2mtag(url) {
     let streamid = ('0000000000' + crc32(url)).slice(-10);
     let tempfilename = temp_folder + "!temp" + streamid + ".tags";
 
-    utils.WriteTextFile(tempfilename, "");
-
     let cmd = url2mtag_bat + " " + "\"" + url + "\"" + " " + "\"" + tempfilename + "\"" + " " + streamid + " \"" + ffprobe_exe + "\" \"" + jq_exe + "\"";
     console.log(cmd);
     WshShell.Run(cmd, 0, false);
@@ -202,6 +200,7 @@ function url2mtag(url) {
             statustext3 = "Failed to mtag " + url;
             window.NotifyOthers("mtagger", statustext + statustext3);
             console.log(window.Name + " : " + err);
+			fso.DeleteFile(tempfilename);
         }
 
         if (response) {
@@ -314,8 +313,6 @@ function tag_single(gmetadb) {
 
     let streamid = ('0000000000' + crc32(url)).slice(-10);
     let tempfilename = temp_folder + "!temp" + streamid + ".tags";
-
-    utils.WriteTextFile(tempfilename, "");
 
     let cmd = url2mtag_bat + " " + "\"" + url + "\"" + " " + "\"" + tempfilename + "\"" + " " + streamid + " \"" + ffprobe_exe + "\" \"" + jq_exe + "\"";
     console.log(cmd);
@@ -430,8 +427,6 @@ function tag_multiple(gmetadb) {
 
         let streamid = ('0000000000' + crc32(url)).slice(-10);
         let tempfilename = temp_folder + "!temp" + streamid + ".tags";
-
-        utils.WriteTextFile(tempfilename, "");
 
         let cmd = url2mtag_bat + " " + "\"" + url + "\"" + " " + "\"" + tempfilename + "\"" + " " + streamid + " \"" + ffprobe_exe + "\" \"" + jq_exe + "\"";
         console.log(cmd);
