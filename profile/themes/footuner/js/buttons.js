@@ -246,12 +246,10 @@ function convert() {
     let items = plman.GetPlaylistSelectedItems(plman.ActivePlaylist);
     let count = items.Count;
     if (count == 1) {
-        for (let i = 0; i < count; i++) {
-            let gmetadb = items[i];
-            statustext = "Processing .... Wait for Idle !!!";
-            window.NotifyOthers("mtagger", statustext);
-            tag_single(gmetadb);
-        }
+        let gmetadb = items[0];
+        statustext = "Processing .... " + fb.TitleFormat("%path%").EvalWithMetadb(gmetadb) + "\n";
+        window.NotifyOthers("mtagger", statustext);
+        tag_single(gmetadb);
     } else {
         let aplidx = plman.ActivePlaylist;
         plman.RemovePlaylistSelection(aplidx);
@@ -271,8 +269,6 @@ function convert() {
         includefiles();
 
     }
-    statustext = "Idle.";
-    window.NotifyOthers("mtagger", statustext);
 }
 
 function convert2() {
@@ -301,6 +297,13 @@ function mtag2m3u(gmetadb) {
 
 function tag_single(gmetadb) {
     let url = fb.TitleFormat("%path%").EvalWithMetadb(gmetadb);
+
+    if (!url.match(urlreg)) {
+        fb.ShowPopupMessage("This is not a URL", "mtagger Error");
+        statustext = "Idle.";
+        window.NotifyOthers("mtagger", statustext);
+        return;
+    }
 
     statustext = "Processing... " + url + "\n";
     window.NotifyOthers("mtagger", statustext);
@@ -415,6 +418,12 @@ function tag_multiple(gmetadb) {
     return new Promise(resolve => {
 
         let url = fb.TitleFormat("%path%").EvalWithMetadb(gmetadb);
+
+        if (!url.match(urlreg)) {
+            resolve();
+			return;
+        }
+
         let response;
         let stream_name_ffprobe;
         let clean_name;
