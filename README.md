@@ -65,6 +65,6 @@ Hover over the station logo to see station info.
 
 Double click the MyHistory Panel to save track details.
 
-Streamripper
+streamWriter https://streamwriter.org/
 
 mp3DirectCut
