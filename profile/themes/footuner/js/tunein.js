@@ -493,34 +493,40 @@ function process_tune(selection, name, logo, guideid, item) {
 
                 let plsitems = plscount;
                 for (let i = 0; i < plsitems; i++) {
-                    let lines = utils.ReadTextFile(temp_folder + i + ".pls").split('\n');
+                    if (utils.FileExists(temp_folder + i + ".pls")) {
+                        let lines = utils.ReadTextFile(temp_folder + i + ".pls").split('\n');
 
-                    for (let line = 0; line < lines.length; line++) {
-                        if (lines[line].match(plsreg)) {
-                            let stream = lines[line].substring(lines[line].indexOf("=") + 1);
-                            urls.push(stream);
+                        for (let line = 0; line < lines.length; line++) {
+                            if (lines[line].match(plsreg)) {
+                                let stream = lines[line].substring(lines[line].indexOf("=") + 1);
+                                urls.push(stream);
+                            }
                         }
                     }
                 }
 
                 for (let i = 0; i < plsitems; i++) {
-                    fso.DeleteFile(temp_folder + i + ".pls");
+                    if (utils.FileExists(temp_folder + i + ".pls"))
+                        fso.DeleteFile(temp_folder + i + ".pls");
                 }
 
                 let m3uitems = m3ucount;
                 for (let i = 0; i < m3uitems; i++) {
-                    let lines = utils.ReadTextFile(temp_folder + i + ".m3u").split('\n');
+                    if (utils.FileExists(temp_folder + i + ".m3u")) {
+                        let lines = utils.ReadTextFile(temp_folder + i + ".m3u").split('\n');
 
-                    for (let line = 0; line < lines.length; line++) {
-                        if (lines[line].match(urlreg)) {
-                            let stream = lines[line];
-                            urls.push(stream);
+                        for (let line = 0; line < lines.length; line++) {
+                            if (lines[line].match(urlreg)) {
+                                let stream = lines[line];
+                                urls.push(stream);
+                            }
                         }
                     }
                 }
 
                 for (let i = 0; i < m3uitems; i++) {
-                    fso.DeleteFile(temp_folder + i + ".m3u");
+                    if (utils.FileExists(temp_folder + i + ".m3u"))
+                        fso.DeleteFile(temp_folder + i + ".m3u");
                 }
 
                 let total_urls = urls.length;
@@ -563,30 +569,30 @@ function tunein2mtag(i, url, name, logo, guideid, item) {
         let counter = 0;
 
         let timer = setInterval(() => {
-            counter++;
-            statustext2 = "(ffprobe) " + (15 - counter);
-            window.NotifyOthers("tunein", statustext + statustext2);
-            try {
-                let ffprobe_file = fso.OpenTextFile(tempfilename, 8);
-                ffprobe_file.Close();
-                clearInterval(timer);
-                statustext2 = "(ffprobe) \u221A ";
+                counter++;
+                statustext2 = "(ffprobe) " + (15 - counter);
                 window.NotifyOthers("tunein", statustext + statustext2);
-                mtag_it();
-            } catch (err) {
-                if (counter == 15) {
+                try {
+                    let ffprobe_file = fso.OpenTextFile(tempfilename, 8);
+                    ffprobe_file.Close();
                     clearInterval(timer);
-                    let cmd = 'taskkill.exe /F /IM ffprobe.exe';
-                    WshShell.Run(cmd, 0, true);
-                    if (utils.FileExists(tempfilename))
-                        fso.DeleteFile(tempfilename);
-                    statustext = "Process Failed... " + url + "\n";
-                    statustext2 = "Failed to ffprobe " + url;
+                    statustext2 = "(ffprobe) \u221A ";
                     window.NotifyOthers("tunein", statustext + statustext2);
-                    resolve();
+                    mtag_it();
+                } catch (err) {
+                    if (counter == 15) {
+                        clearInterval(timer);
+                        let cmd = 'taskkill.exe /F /IM ffprobe.exe';
+                        WshShell.Run(cmd, 0, true);
+                        if (utils.FileExists(tempfilename))
+                            fso.DeleteFile(tempfilename);
+                        statustext = "Process Failed... " + url + "\n";
+                        statustext2 = "Failed to ffprobe " + url;
+                        window.NotifyOthers("tunein", statustext + statustext2);
+                        resolve();
+                    }
                 }
-            }
-        }, 1000);
+            }, 1000);
         function mtag_it() {
             try {
                 let temptagarray = utils.ReadTextFile(tempfilename);
@@ -652,25 +658,25 @@ function tunein2mtag(i, url, name, logo, guideid, item) {
                     counter = 0;
 
                     let timer2 = setInterval(() => {
-                        counter++;
-                        statustext4 = " (logo) " + (15 - counter);
-                        window.NotifyOthers("tunein", statustext + statustext2 + statustext3 + statustext4);
-
-                        if (utils.IsFile(imagefile + "." + logoext)) {
-                            clearInterval(timer2);
-                            statustext4 = " (logo) \u221A ";
+                            counter++;
+                            statustext4 = " (logo) " + (15 - counter);
                             window.NotifyOthers("tunein", statustext + statustext2 + statustext3 + statustext4);
-                            add_mtag();
 
-                        } else if (counter == 15) {
-                            clearInterval(timer2);
-                            statustext4 = " (logo) x";
-                            console.log(window.Name + " : Logo download failed. URL: " + logo);
-                            window.NotifyOthers("tunein", statustext + statustext2 + statustext3 + statustext4);
-                            add_mtag();
-                        }
+                            if (utils.IsFile(imagefile + "." + logoext)) {
+                                clearInterval(timer2);
+                                statustext4 = " (logo) \u221A ";
+                                window.NotifyOthers("tunein", statustext + statustext2 + statustext3 + statustext4);
+                                add_mtag();
 
-                    }, 1000);
+                            } else if (counter == 15) {
+                                clearInterval(timer2);
+                                statustext4 = " (logo) x";
+                                console.log(window.Name + " : Logo download failed. URL: " + logo);
+                                window.NotifyOthers("tunein", statustext + statustext2 + statustext3 + statustext4);
+                                add_mtag();
+                            }
+
+                        }, 1000);
                 } else {
                     statustext4 = " (logo) N/A ";
                     window.NotifyOthers("tunein", statustext + statustext2 + statustext3 + statustext4);
