@@ -17,6 +17,7 @@ if (!fso.FolderExists(recordings_folder))
 
 const streamwriter_exe = fb.ProfilePath + 'themes\\footuner\\bin\\streamwriter\\streamwriter.exe';
 const streamwriter_dir = userdata_folder + 'streamwriter';
+const streamwriter_temp_dir = fb.ProfilePath + 'themes\\footuner\\bin\\streamwriter\\temp';
 const streamwriter_base_ini = fb.ProfilePath + 'themes\\footuner\\bin\\streamwriter\\streamwriter_settings.ini';
 const streamwriter_base_dat = fb.ProfilePath + 'themes\\footuner\\bin\\streamwriter\\streamwriter_data.dat';
 const streamwriter_ini = userdata_folder + 'streamwriter\\streamwriter_settings.ini';
@@ -87,7 +88,7 @@ function on_playback_new_track() {
     let format = panel.tf("$if2([%stream_ffprobe_format%],[%codec%])");
 
     if (urlreg.test(url) && (mp3reg.test(format) || aacreg.test(format))) {
-        let cmd = "\"" + streamwriter_exe + "\"" + " -minimize -r " + "\"" + url.split('?')[0] + "\"" + " -datadir " + "\"" + streamwriter_dir + "\"";
+        let cmd = "\"" + streamwriter_exe + "\"" + " -minimize -r " + "\"" + url.split('?')[0] + "\"" + " -datadir " + "\"" + streamwriter_dir + "\"" + " -tempdir " + "\"" + streamwriter_temp_dir + "\"";
         console.log("Recorder: " + cmd);
         WshShell.Run(cmd, 0, false);
         sw_recording = 1;
@@ -110,7 +111,7 @@ function on_playback_stop(reason) {
     }
 
     clearInterval(timer);
-    let cmd = "\"" + streamwriter_exe + "\"" + " -minimize -sr " + utils.ReadINI(settings_file, 'streamwriter', 'url') + " -datadir " + "\"" + streamwriter_dir + "\"";
+    let cmd = "\"" + streamwriter_exe + "\"" + " -minimize -sr " + utils.ReadINI(settings_file, 'streamwriter', 'url') + " -datadir " + "\"" + streamwriter_dir + "\"" + " -tempdir " + "\"" + streamwriter_temp_dir + "\"";
     console.log("Recorder: " + cmd);
     WshShell.Run(cmd, 0, false);
     sw_recording = 0;
