@@ -39,19 +39,65 @@ utils.WriteINI(streamwriter_ini, 'Settings', 'LogFile', streamwriter_log);
 let sw_recording = utils.ReadINI(settings_file, 'streamwriter', 'recording');
 let sw_url = utils.ReadINI(settings_file, 'streamwriter', 'url');
 
+let sw_enabled = utils.ReadINI(settings_file, 'streamwriter', 'enabled');
+
+if (sw_enabled == "") {
+    sw_enabled = 0;
+    utils.WriteINI(settings_file, 'streamwriter', 'enabled', 0);
+}
+
 if (utils.FileExists(streamwriter_log) && sw_recording == 0)
     try {
         fso.DeleteFile(streamwriter_log);
     } catch (err) {}
 
+if (sw_enabled == 1 && sw_recording == 0) {
+    let cmd = "\"" + streamwriter_exe + "\"" + " -minimize " + "\"" + " -datadir " + "\"" + streamwriter_dir + "\"" + " -tempdir " + "\"" + streamwriter_temp_dir + "\"";
+    console.log("Recorder: " + cmd);
+    WshShell.Run(cmd, 0, false);
+
+}
+
 let urlreg = new RegExp("http", "i");
 let mp3reg = new RegExp("mp3", "i");
 let aacreg = new RegExp("aac", "i");
 
+function _menu_() {
+    this.rbtn_up = (x, y) => {
+        panel.m.AppendMenuItem(MF_STRING, 2000, 'Use StreamWriter');
+        panel.m.CheckMenuItem(2000, (sw_enabled == '1'));
+    }
+
+    this.rbtn_up_done = (idx) => {
+
+        switch (idx) {
+        case 2000:
+            sw_enabled = (sw_enabled == '1') ? 0 : 1;
+            utils.WriteINI(settings_file, 'streamwriter', 'enabled', sw_enabled);
+            if (sw_enabled == 0) {
+                clearInterval(timer);
+                const exit_sw = "\"" + fb.ProfilePath + 'themes\\footuner\\bin\\streamwriter\\ExitSW.exe' + "\"";
+                utils.WriteINI(settings_file, 'streamwriter', 'recording', 0);
+                sw_recording = 0;
+                utils.WriteINI(settings_file, 'streamwriter', 'url', '');
+                WshShell.Run(exit_sw, 0, false);
+            }
+            if (sw_enabled == 1 && sw_recording == 0) {
+                let cmd = "\"" + streamwriter_exe + "\"" + " -minimize " + "\"" + " -datadir " + "\"" + streamwriter_dir + "\"" + " -tempdir " + "\"" + streamwriter_temp_dir + "\"";
+                console.log("Recorder: " + cmd);
+                WshShell.Run(cmd, 0, false);
+            }
+            g_text = (sw_enabled == '1') ? 'StreamWriter Enabled' : 'StreamWriter Disabled';
+            window.Repaint();
+            break;
+
+        }
+    }
+}
+
 let panel = new _panel(true);
-let g_text = '';
-if (sw_recording == 0)
-    g_text += 'StreamWriter\nIdle';
+let menu_sw = new _menu_();
+let g_text = (sw_enabled == '1') ? 'StreamWriter Enabled' : 'StreamWriter Disabled';
 let timer = 0;
 
 panel.item_focus_change();
@@ -71,7 +117,7 @@ function on_item_focus_change() {
 }
 
 function on_mouse_rbtn_up(x, y) {
-    return panel.rbtn_up(x, y);
+    return panel.rbtn_up(x, y, menu_sw);
 }
 
 function on_paint(gr) {
@@ -82,48 +128,46 @@ function on_paint(gr) {
 function on_playback_new_track() {
 
     panel.item_focus_change();
+    if (sw_enabled == 1) {
+        let np_tf_stream_name = panel.tf("$if3([%stream_tunein_name%],[%stream_crb_name%],[%stream_ffprobe_name%],[$info(@)],[%path%])").trim();
+        let url = panel.tf("$if3([$info(@)],[%stream_url%],[%path%])");
+        let format = panel.tf("$if2([%stream_ffprobe_format%],[%codec%])");
 
-    let np_tf_stream_name = panel.tf("$if3([%stream_tunein_name%],[%stream_crb_name%],[%stream_ffprobe_name%],[$info(@)],[%path%])").trim();
-    let url = panel.tf("$if3([$info(@)],[%stream_url%],[%path%])");
-    let format = panel.tf("$if2([%stream_ffprobe_format%],[%codec%])");
-
-    if (urlreg.test(url) && (mp3reg.test(format) || aacreg.test(format))) {
-        let cmd = "\"" + streamwriter_exe + "\"" + " -minimize -r " + "\"" + url.split('?')[0] + "\"" + " -datadir " + "\"" + streamwriter_dir + "\"" + " -tempdir " + "\"" + streamwriter_temp_dir + "\"";
-        console.log("Recorder: " + cmd);
-        WshShell.Run(cmd, 0, false);
-        sw_recording = 1;
-        utils.WriteINI(settings_file, 'streamwriter', 'recording', 1);
-        utils.WriteINI(settings_file, 'streamwriter', 'url', url.split('?')[0]);
-        g_text = 'StreamWriter (External application - running in tray)\nRecording: ' + url.split('?')[0];
-        window.Repaint();
-        monitor(url.split('?')[0]);
-    } else {
-        g_text = 'StreamWriter\nCan only record mp3 / aac streams';
-        window.Repaint();
-        return;
+        if (urlreg.test(url) && (mp3reg.test(format) || aacreg.test(format))) {
+            let cmd = "\"" + streamwriter_exe + "\"" + " -minimize -r " + "\"" + url.split('?')[0] + "\"" + " -datadir " + "\"" + streamwriter_dir + "\"" + " -tempdir " + "\"" + streamwriter_temp_dir + "\"";
+            console.log("Recorder: " + cmd);
+            WshShell.Run(cmd, 0, false);
+            sw_recording = 1;
+            utils.WriteINI(settings_file, 'streamwriter', 'recording', 1);
+            utils.WriteINI(settings_file, 'streamwriter', 'url', url.split('?')[0]);
+            monitor(url.split('?')[0]);
+        } else {
+            g_text = 'StreamWriter\nCan only record mp3 / aac streams';
+            window.Repaint();
+            return;
+        }
     }
-
 }
 
 function on_playback_stop(reason) {
+    clearInterval(timer);
     if (reason != 2) {
         panel.item_focus_change();
     }
+    if (sw_enabled == 1 && sw_recording == 1) {
+        let cmd = "\"" + streamwriter_exe + "\"" + " -minimize -sr " + utils.ReadINI(settings_file, 'streamwriter', 'url') + " -datadir " + "\"" + streamwriter_dir + "\"" + " -tempdir " + "\"" + streamwriter_temp_dir + "\"";
+        console.log("Recorder: " + cmd);
+        WshShell.Run(cmd, 0, false);
+        sw_recording = 0;
+        utils.WriteINI(settings_file, 'streamwriter', 'recording', 0);
+        utils.WriteINI(settings_file, 'streamwriter', 'url', '');
+        g_text = (sw_enabled == '1') ? 'StreamWriter Enabled' : 'StreamWriter Disabled';
+        window.Repaint();
 
-    clearInterval(timer);
-    let cmd = "\"" + streamwriter_exe + "\"" + " -minimize -sr " + utils.ReadINI(settings_file, 'streamwriter', 'url') + " -datadir " + "\"" + streamwriter_dir + "\"" + " -tempdir " + "\"" + streamwriter_temp_dir + "\"";
-    console.log("Recorder: " + cmd);
-    WshShell.Run(cmd, 0, false);
-    sw_recording = 0;
-    utils.WriteINI(settings_file, 'streamwriter', 'recording', 0);
-    utils.WriteINI(settings_file, 'streamwriter', 'url', '');
-    g_text = 'StreamWriter (External application - minimized in tray)\nIdle';
-    window.Repaint();
-
-    try {
-        fso.DeleteFile(streamwriter_log);
-    } catch (err) {}
-
+        try {
+            fso.DeleteFile(streamwriter_log);
+        } catch (err) {}
+    }
 }
 
 function monitor(url) {
@@ -163,10 +207,10 @@ function on_size() {
     panel.size();
 }
 
-if (sw_recording == 0 && fb.IsPlaying) {
+if (sw_enabled == 1 && sw_recording == 0 && fb.IsPlaying) {
     on_playback_new_track();
 }
 
-if (sw_recording == 1) {
+if (sw_recording == 1 && sw_enabled == 1 && fb.IsPlaying) {
     monitor(panel.tf("$if3([$info(@)],[%stream_url%],[%path%])"));
 }
