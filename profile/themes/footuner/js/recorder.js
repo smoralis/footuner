@@ -50,13 +50,7 @@ if (utils.FileExists(streamwriter_log) && sw_recording == 0)
     try {
         fso.DeleteFile(streamwriter_log);
     } catch (err) {}
-
-if (sw_enabled == 1 && sw_recording == 0) {
-    let cmd = "\"" + streamwriter_exe + "\"" + " -minimize " + "\"" + " -datadir " + "\"" + streamwriter_dir + "\"" + " -tempdir " + "\"" + streamwriter_temp_dir + "\"";
-    console.log("Recorder: " + cmd);
-    WshShell.Run(cmd, 0, false);
-
-}
+	
 
 let urlreg = new RegExp("http", "i");
 let mp3reg = new RegExp("mp3", "i");
