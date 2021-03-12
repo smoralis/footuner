@@ -6,7 +6,6 @@ const settings_file = userdata_folder + 'settings.ini';
 const exit_sw = "\"" + fb.ProfilePath + 'themes\\footuner\\bin\\streamwriter\\ExitSW.exe' + "\"";
 
 let WshShell = new ActiveXObject('WScript.Shell');
-let fso = new ActiveXObject("Scripting.FileSystemObject")
 
 function on_script_unload() {
     if (!fb.IsPlaying) {
