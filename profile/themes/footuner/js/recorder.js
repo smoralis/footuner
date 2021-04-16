@@ -122,7 +122,7 @@ function on_paint(gr) {
 function on_playback_new_track() {
 
     panel.item_focus_change();
-    if (sw_enabled == 1) {
+    if (sw_enabled == 1 && sw_recording == 0) {
         let np_tf_stream_name = panel.tf("$if3([%stream_tunein_name%],[%stream_crb_name%],[%stream_ffprobe_name%],[$info(@)],[%path%])").trim();
         let url = panel.tf("$if3([$info(@)],[%stream_url%],[%path%])");
         let format = panel.tf("$if2([%stream_ffprobe_format%],[%codec%])");
