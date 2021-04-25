@@ -29,6 +29,7 @@ panel.item_focus_change();
 let tfo = {
     artist: fb.TitleFormat('$ifequal(%stream_reverse%,1,[%title%],[%artist%])'),
     title: fb.TitleFormat('$ifequal(%stream_reverse%,1,[%artist%],[%title%])'),
+    cover_url: fb.TitleFormat('[$info(cover_url)]')
 };
 
 let listeners;
@@ -36,17 +37,26 @@ let playcount;
 let cover;
 let toptags = [];
 let loaded = 0;
+let cover_url;
 
 function delete_cover() {
-        try {
-            fso.DeleteFile(lastfm_cover_file);
-            _tt("");
-        } catch (err) {
-          //  console.log(window.Name + " : (delete) : " + err);
-        }
+    try {
+        fso.DeleteFile(lastfm_cover_file);
+        _tt("");
+    } catch (err) {
+        //  console.log(window.Name + " : (delete) : " + err);
+    }
 }
 
 function lfm_download() {
+    cover_url = tfo.cover_url.Eval();
+    if (cover_url && cover_url.startsWith("http")) {
+		cover_url = cover_url.split('?')[0];
+        loaded = 0;
+        album_cover_file = lastfm_cover_download_folder + "\\" + _fbSanitise(tfo.artist.Eval()) + " - " + _fbSanitise(tfo.title.Eval()) + "." + cover_url.split('.').pop();
+        lfm_image_dl(cover_url, album_cover_file);
+        return;
+    }
     if (tfo.artist.Eval() && tfo.title.Eval() && api_key) {
         let url = "https://ws.audioscrobbler.com/2.0/?method=track.getInfo&api_key=" + api_key + "&artist=" + encodeURIComponent(tfo.artist.Eval()) + "&track=" + encodeURIComponent(tfo.title.Eval()) + "&format=json";
         xmlhttp.open('GET', url);
@@ -57,19 +67,19 @@ function lfm_download() {
                     try {
                         let json_data = _jsonParse(xmlhttp.responseText);
                         let txt;
-						toptags = [];
-						let txt2 = "";
+                        toptags = [];
+                        let txt2 = "";
                         if (json_data.track.listeners)
                             listeners = json_data.track.listeners;
                         if (json_data.track.playcount)
                             playcount = json_data.track.playcount;
-						if (json_data.track.toptags.tag){
-							for (var i = 0; i < json_data.track.toptags.tag.length; i++) {
-								toptags.push(json_data.track.toptags.tag[i].name);
-							}
-							txt2 = toptags.join(" / ");
-							window.NotifyOthers("lastfm2", txt2);
-						}												
+                        if (json_data.track.toptags.tag) {
+                            for (var i = 0; i < json_data.track.toptags.tag.length; i++) {
+                                toptags.push(json_data.track.toptags.tag[i].name);
+                            }
+                            txt2 = toptags.join(" / ");
+                            window.NotifyOthers("lastfm2", txt2);
+                        }
                         let track_url;
                         if (json_data.track.url)
                             track_url = json_data.track.url;
@@ -119,7 +129,7 @@ function lfm_image_dl(url, file) {
                     objADOStream.SaveToFile(file);
                     objADOStream.Close();
                 } catch (err) {
-                   // console.log(window.Name + " : (download-lfm_image_dl) : " + err);
+                    // console.log(window.Name + " : (download-lfm_image_dl) : " + err);
                 }
             }
         }
@@ -137,10 +147,15 @@ let timer = setInterval(() => {
                 fso.CopyFile(album_cover_file, lastfm_cover_file);
                 loaded = 1;
                 _tt("Artist : " + artist + "\nAlbum : " + album);
-                window.NotifyOthers("lastfm", "Listeners:  " + listeners.replace(/(.)(?=(\d{3})+$)/g, '$1,') + "  \u25E6  Playcount: " + playcount.replace(/(.)(?=(\d{3})+$)/g, '$1,'));
+                if (listeners && playcount) {
+                    window.NotifyOthers("lastfm", "Listeners:  " + listeners.replace(/(.)(?=(\d{3})+$)/g, '$1,') + "  \u25E6  Playcount: " + playcount.replace(/(.)(?=(\d{3})+$)/g, '$1,'));
+                }
+                if (cover_url && cover_url.startsWith("http")) {
+                    window.NotifyOthers("lastfm", "Album cover_url found in stream");
+                }
                 thumbs.update();
             } catch (err) {
-               // console.log(window.Name + " : (timer) : " + err);
+                console.log(window.Name + " : (timer) : " + err);
             }
     }, 1000);
 
@@ -211,7 +226,7 @@ function on_playback_new_track() {
 
 function on_playback_stop(reason) {
     window.NotifyOthers("lastfm", "Last.fm");
-	window.NotifyOthers("lastfm2", "");
+    window.NotifyOthers("lastfm2", "");
     album_cover_file = "";
     delete_cover();
     thumbs.update();
