@@ -6,7 +6,7 @@ Search and import streams from:
 
 Tunein (https://tunein.com/)
 
-Community Radio Browser (http://www.radio-browser.info/gui/#!/) 
+Community Radio Browser (http://www.radio-browser.info/) 
 
 Live365 (https://live365.com/)
 
