@@ -533,7 +533,7 @@ function process_tune(selection, name, logo, guideid, item) {
 
                 async function includeurls(urls) {
                     for (let i = 0; i < total_urls; i++) {
-                        statustext = "Processing " + (i + 1) + " of " + total_urls + " - " + urls[i] + "\n";
+                        statustext = "Processing " + (i + 1) + " of " + total_urls + " - " + urls[i].split('?')[0] + "\n";
                         window.NotifyOthers("tunein", statustext);
                         await tunein2mtag(i, urls[i], name, logo, guideid, item);
                     }
@@ -551,6 +551,7 @@ function process_tune(selection, name, logo, guideid, item) {
 
 function tunein2mtag(i, url, name, logo, guideid, item) {
     return new Promise(resolve => {
+		url = url.split('?')[0];
         let response;
         let streamid = ('0000000000' + crc32(url)).slice(-10);
         let tempfilename = temp_folder + "!temp" + streamid + ".tags";
