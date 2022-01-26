@@ -87,7 +87,7 @@ function start_search(info, callback) {
             if (httpClient.StatusCode == 200) {
 				var lyrics = "";
                 var class1 = response.match(/<div class="lyrics">([^`]*?)<\/div>/g);
-                var class2 = response.match(/<div data-lyrics-container="true" class="Lyrics__Container-sc-1ynbvzw-6 lgZgEN">([^`]*?)<\/div>/g);
+                var class2 = response.match(/<div data-lyrics-container="true" class="Lyrics__Container([^`]*?)<\/div>/g);
                 if (class1) {
                     for (c1 = 0; c1 < class1.length; c1++) {
                         lyrics += class1[c1].replace(/<[^>]*>/g, "").replace(/^\s+/mg, "");
