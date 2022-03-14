@@ -13,10 +13,12 @@ const helptext1 = "\n\nShift-Click to Save (Station must be playing)";
 const helptext2 = "\n\nClick to play\nCtrl-Click to Clear";
 const preset_ph_logo = fb.ProfilePath + 'themes\\footuner\\images\\presets\\Preset.png';
 
-
 if (!fso.FolderExists(logo_folder))
     fso.CreateFolder(logo_folder);
-	
+
+if (plman.FindPlaylist("Presets") == -1)
+    plman.CreatePlaylist(plman.PlaylistCount, "Presets");
+
 let presets_arr = [];
 let presetname_arr = [];
 let presetlogo_arr = [];
@@ -52,7 +54,7 @@ function buttonss() {
 
 function play(filename) {
     if (filename) {
-        let cmd = "\"" + fb.FoobarPath + "foobar2000.exe" + "\"" + "/run_main:\"View/Switch to playlist/Presets Playlist\" /run_main:Edit/Clear /add /immediate " + "\"" + filename + "\"";
+        let cmd = "\"" + fb.FoobarPath + "foobar2000.exe" + "\"" + "/run_main:\"View/Switch to playlist/Presets\" /run_main:Edit/Clear /add /immediate " + "\"" + userdata_folder + "mtags\\" + filename + "\"";
         WshShell.Run(cmd, 0, true);
         cmd = "\"" + fb.FoobarPath + "foobar2000.exe" + "\"" + " /play ";
         WshShell.Run(cmd, 0, true);
@@ -64,7 +66,7 @@ function savepreset(preset) {
         let text;
         let filename = userdata_folder + "mtags\\" + fb.TitleFormat("%directoryname%").Eval(true) + "\\" + fb.TitleFormat("%filename_ext%").Eval(true);
         if (utils.FileTest(filename, "e")) {
-            filename = filename;
+            filename = fb.TitleFormat("%directoryname%").Eval(true) + "\\" + fb.TitleFormat("%filename_ext%").Eval(true);
             text = fb.TitleFormat("$if3([%stream_tunein_name%],[%stream_crb_name%],[%stream_ffprobe_name%],[$info(@)],[%path%])").Eval(true);
         } else {
             filename = fb.TitleFormat("%path%").Eval(true);
