@@ -54,7 +54,14 @@ function buttonss() {
 
 function play(filename) {
     if (filename) {
-        let cmd = "\"" + fb.FoobarPath + "foobar2000.exe" + "\"" + "/run_main:\"View/Switch to playlist/Presets\" /run_main:Edit/Clear /add /immediate " + "\"" + userdata_folder + "mtags\\" + filename + "\"";
+        let mfilename = userdata_folder + "mtags\\" + filename;
+        let cmd;
+        if (utils.FileTest(mfilename, "e")) {
+            cmd = "\"" + fb.FoobarPath + "foobar2000.exe" + "\"" + "/run_main:\"View/Switch to playlist/Presets\" /run_main:Edit/Clear /add /immediate " + "\"" + userdata_folder + "mtags\\" + filename + "\"";
+        } else {
+            cmd = "\"" + fb.FoobarPath + "foobar2000.exe" + "\"" + "/run_main:\"View/Switch to playlist/Presets\" /run_main:Edit/Clear /add /immediate " + "\"" + filename + "\"";
+        }
+
         WshShell.Run(cmd, 0, true);
         cmd = "\"" + fb.FoobarPath + "foobar2000.exe" + "\"" + " /play ";
         WshShell.Run(cmd, 0, true);
