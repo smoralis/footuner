@@ -19,7 +19,7 @@ var api = {
 }
 
 var notice = "";
-if (api.clientAccessToken == "XXXXX 74kICtH7KOvyhQxuA_gzJjuR4EH4eTdvHPvrI5wzCgvUgcRIyf6yEzOBavRe8zgU") {
+if (api.clientAccessToken == "74kICtH7KOvyhQxuA_gzJjuR4EH4eTdvHPvrI5wzCgvUgcRIyf6yEzOBavRe8zgU") {
     notice = "WARNING : You will need to sign up to GENIUS and get your own API access token.\nPlease do it, and replace the client access token in the file located at \n" + access_token_file + "\nwith your own.\nOtherwise, at some point Genius may block this token if too many people are using it.\nURL to sign-up to Genius and get your own keys: https://genius.com/api-clients\n";
 } else {
     notice = "";
