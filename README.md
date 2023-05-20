@@ -34,7 +34,7 @@ Icecast (https://dir.xiph.org/)
 
 # Installation
 
-1. Install Foobar2000 (portable) http://www.foobar2000.org/download (Version >= foobar2000 v1.6.1)
+1. Install Foobar2000 (portable) http://www.foobar2000.org/download (Version >= foobar2000 v1.6.1 32-bit)
 2. Download https://github.com/smoralis/footuner/archive/master.zip
 2. Copy the profile folder in the zip into the installation folder (overwrite existing profile folder) 
 
