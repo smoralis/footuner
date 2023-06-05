@@ -50,16 +50,16 @@ function delete_cover() {
 
 function lfm_download() {
     cover_url = tfo.cover_url.Eval();
-    if (cover_url && cover_url.startsWith("http")) {
+    if (cover_url && cover_url.match("^https?:\\/\\/.+\\.(jpg|jpeg|png|webp|avif|gif|svg)$")) {
 		cover_url = cover_url.split('?')[0];
         loaded = 0;
         album_cover_file = lastfm_cover_download_folder + "\\" + _fbSanitise(tfo.artist.Eval()) + " - " + _fbSanitise(tfo.title.Eval()) + "." + cover_url.split('.').pop();
-        lfm_image_dl(cover_url, album_cover_file);
+		lfm_image_dl(cover_url, album_cover_file);
         return;
     }
     if (tfo.artist.Eval() && tfo.title.Eval() && api_key) {
         let url = "https://ws.audioscrobbler.com/2.0/?method=track.getInfo&api_key=" + api_key + "&artist=" + encodeURIComponent(tfo.artist.Eval()) + "&track=" + encodeURIComponent(tfo.title.Eval()) + "&format=json";
-        xmlhttp.open('GET', url);
+		xmlhttp.open('GET', url);
         xmlhttp.setRequestHeader('User-Agent', "spider_monkey_panel_footuner");
         xmlhttp.onreadystatechange = () => {
             if (xmlhttp.readyState == 4) {
@@ -150,7 +150,7 @@ let timer = setInterval(() => {
                 if (listeners && playcount) {
                     window.NotifyOthers("lastfm", "Listeners:  " + listeners.replace(/(.)(?=(\d{3})+$)/g, '$1,') + "  \u25E6  Playcount: " + playcount.replace(/(.)(?=(\d{3})+$)/g, '$1,'));
                 }
-                if (cover_url && cover_url.startsWith("http")) {
+                if (cover_url && cover_url.match("^https?:\\/\\/.+\\.(jpg|jpeg|png|webp|avif|gif|svg)$")) {
                     window.NotifyOthers("lastfm", "Album cover_url found in stream");
                 }
                 thumbs.update();
