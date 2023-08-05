@@ -50,6 +50,7 @@ function delete_cover() {
 
 function lfm_download() {
     cover_url = tfo.cover_url.Eval();
+	cover_url = cover_url.split('?')[0];
     if (cover_url && cover_url.match("^https?:\\/\\/.+\\.(jpg|jpeg|png|webp|avif|gif|svg)$")) {
 		cover_url = cover_url.split('?')[0];
         loaded = 0;
