@@ -81,6 +81,19 @@ function lfm_download() {
         }
         xml2http.send();
     }
+
+    cover_url = tfo.cover_url.Eval();
+    if (cover_url && cover_url.match("http://metadata.cdnstream1.com")) {
+        let album_url = decodeURIComponent(extractUrlValue("WWW_ALBUM_ART", cover_url));
+
+        if (album_url != 'null') {
+            loaded = 0;
+            album_cover_file = lastfm_cover_download_folder + "\\" + _fbSanitise(tfo.artist.Eval()) + " - " + _fbSanitise(tfo.title.Eval()) + "." + album_url.split('.').pop();
+            lfm_image_dl(album_url, album_cover_file);
+            return;
+        }
+    }
+
     if (tfo.artist.Eval() && tfo.title.Eval() && api_key) {
         let url = "https://ws.audioscrobbler.com/2.0/?method=track.getInfo&api_key=" + api_key + "&artist=" + encodeURIComponent(tfo.artist.Eval()) + "&track=" + encodeURIComponent(tfo.title.Eval()) + "&format=json";
         xmlhttp.open('GET', url);
@@ -175,10 +188,13 @@ let timer = setInterval(() => {
                     window.NotifyOthers("lastfm", "Listeners:  " + listeners.replace(/(.)(?=(\d{3})+$)/g, '$1,') + "  \u25E6  Playcount: " + playcount.replace(/(.)(?=(\d{3})+$)/g, '$1,'));
                 }
                 if (cover_url && cover_url.match("^https?:\\/\\/.+\\.(jpg|jpeg|png|webp|avif|gif|svg)$")) {
-                    window.NotifyOthers("lastfm", "Album cover_url found in stream");
+                    window.NotifyOthers("lastfm", "cover_url (image) found in stream");
                 }
                 if (cover_url && cover_url.match("https://listenapi.planetradio.co.uk")) {
-                    window.NotifyOthers("lastfm", "Album cover_url (planetradio) found in stream");
+                    window.NotifyOthers("lastfm", "cover_url (planetradio) found in stream");
+                }
+                if (cover_url && cover_url.match("http://metadata.cdnstream1.com")) {
+                    window.NotifyOthers("lastfm", "cover_url (streamon) found in stream");
                 }
                 thumbs.update();
             } catch (err) {
@@ -240,6 +256,7 @@ function on_playback_dynamic_info_track() {
     delete_cover();
     thumbs.update();
     lfm_download();
+	if (tfo.cover_url.Eval()) console.log("cover_url: " + tfo.cover_url.Eval());
 }
 
 function on_playback_new_track() {
@@ -269,6 +286,11 @@ function on_playlist_switch() {
 function on_size() {
     panel.size();
     thumbs.size();
+}
+
+function extractUrlValue(key, url) {
+    let match = url.match('[?&]' + key + '=([^&#]+)');
+    return match ? match[1] : null;
 }
 
 delete_cover();
