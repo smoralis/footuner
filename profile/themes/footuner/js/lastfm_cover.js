@@ -29,8 +29,9 @@ panel.item_focus_change();
 let tfo = {
     artist: fb.TitleFormat('$ifequal(%stream_reverse%,1,[%title%],[%artist%])'),
     title: fb.TitleFormat('$ifequal(%stream_reverse%,1,[%artist%],[%title%])'),
-    cover_url: fb.TitleFormat('[$info(cover_url)]')
-};
+    cover_url: fb.TitleFormat('[$info(cover_url)]'),
+	ref_url: fb.TitleFormat('[$info(@)]')
+}
 
 let listeners;
 let playcount;
@@ -51,6 +52,38 @@ function delete_cover() {
 function lfm_download() {
     cover_url = tfo.cover_url.Eval();
     cover_url = cover_url.split('?')[0];
+	
+/*
+http://stream.radioparadise.com/aac-32
+http://stream.radioparadise.com/aac-64
+http://stream.radioparadise.com/aac-128
+http://stream.radioparadise.com/aac-320
+http://stream.radioparadise.com/mp3-192
+http://stream.radioparadise.com/mellow-32
+http://stream.radioparadise.com/mellow-64
+http://stream.radioparadise.com/mellow-128
+http://stream.radioparadise.com/mellow-320
+http://stream.radioparadise.com/mellow-192
+http://stream.radioparadise.com/rock-32
+http://stream.radioparadise.com/rock-64
+http://stream.radioparadise.com/rock-128
+http://stream.radioparadise.com/rock-320
+http://stream.radioparadise.com/rock-192
+http://stream.radioparadise.com/global-32
+http://stream.radioparadise.com/global-64
+http://stream.radioparadise.com/global-128
+http://stream.radioparadise.com/global-320
+http://stream.radioparadise.com/global-192
+http://broadcast.infomaniak.ch/energybern-high.mp3
+http://broadcast.infomaniak.ch/energyzuerich-high.mp3
+http://streams.olympia-streams.nl:80/classics
+http://streams.olympia-streams.nl:80/classics64
+http://streams.olympia-streams.nl:80/classics192
+http://streams.olympia-streams.nl:80/olympia
+http://streams.olympia-streams.nl:80/olympia64
+http://streams.olympia-streams.nl:80/olympia192
+http://stream.dandelionradio.com:9414/
+*/	
     if (cover_url && cover_url.match("^https?:\\/\\/.+\\.(jpg|jpeg|png|webp|avif|gif|svg)$")) {
         cover_url = cover_url.split('?')[0];
         loaded = 0;
@@ -58,6 +91,52 @@ function lfm_download() {
         lfm_image_dl(cover_url, album_cover_file);
         return;
     }
+	
+/*
+http://edge-bauerall-01-gos2.sharp-stream.com/forth1.mp3
+http://edge-bauerall-01-gos2.sharp-stream.com/gem106.mp3
+http://edge-bauerall-01-gos2.sharp-stream.com/net2gloucester.mp3
+http://edge-bauerall-01-gos2.sharp-stream.com/net2sussex.mp3
+http://edge-bauerall-01-gos2.sharp-stream.com/net2westnorfolk.mp3
+http://edge-bauerall-01-gos2.sharp-stream.com/planetrock.mp3
+http://edge-bauerall-01-gos2.sharp-stream.com/scalahigh.aac
+http://icy-e-bz-07-boh.sharp-stream.com/northsound2.mp3
+http://live-bauer-al.sharp-stream.com/kisstory.mp3
+http://live-bauerdk.sharp-stream.com/voice128.mp3
+http://stream-mz.planetradio.co.uk/net1cornwalleast.aac
+http://tx-bauerdk.sharp-stream.com/http_live.php?i=radiosoft_dk_mp3
+https://edge-bauerall-01-gos2.sharp-stream.com/absolute00shigh.aac
+https://edge-bauerall-01-gos2.sharp-stream.com/absolute10shigh.aac
+https://edge-bauerall-01-gos2.sharp-stream.com/absolute60shigh.aac
+https://edge-bauerall-01-gos2.sharp-stream.com/absolute70shigh.aac
+https://edge-bauerall-01-gos2.sharp-stream.com/absolute80shigh.aac
+https://edge-bauerall-01-gos2.sharp-stream.com/absolute90shigh.aac
+https://edge-bauerall-01-gos2.sharp-stream.com/absoluteclassicrockhigh.aac
+https://edge-bauerall-01-gos2.sharp-stream.com/hits.mp3
+https://edge-bauerall-01-gos2.sharp-stream.com/kerrang.mp3
+https://edge-bauerall-01-gos2.sharp-stream.com/metro.mp3
+https://edge-bauerall-01-gos2.sharp-stream.com/net1cornwall.mp3
+https://edge-bauerall-01-gos2.sharp-stream.com/net2aylesbury.mp3
+https://edge-bauerall-01-gos2.sharp-stream.com/net2york.mp3
+https://edge-bauerall-01-gos2.sharp-stream.com/webcast3high.aac
+https://edge-bauerdk-02-thn.sharp-stream.com/radio100_dk_tunein_mp3
+https://live-bauerdk.sharp-stream.com/DK_HQ_RP11.aac
+https://live-bauerdk.sharp-stream.com/myrock_dk_mp3
+https://live-bauerdk.sharp-stream.com/radiosoft_dk_tunein_mp3
+https://live-bauerdk.sharp-stream.com/thevoice_dk_mp3
+https://live-bauerno.sharp-stream.com/kiss_no_mp3
+https://live-bauerno.sharp-stream.com/station17_no_mp3
+https://live-bauerse-fm.sharp-stream.com/retrofm_aacp
+https://live-bauerse-fm.sharp-stream.com/vinylfm_instream_se_aacp
+https://stream-al.planetradio.co.uk/kissfresh.aac
+https://stream-mz.planetradio.co.uk/magicnational.mp3
+https://stream-mz.planetradio.co.uk/magicsoul.mp3
+https://stream-mz.planetradio.co.uk/net2essex.aac
+https://stream-mz.planetradio.co.uk/net2suffolk.aac
+https://stream.on.revma.com/6wa52xb1pg0uv
+https://stream.on.revma.com/edb2t3pp2p8uv
+*/	
+
     if (cover_url && cover_url.match("https://listenapi.planetradio.co.uk")) {
         xml2http.open('GET', cover_url);
         xml2http.setRequestHeader('User-Agent', "spider_monkey_panel_footuner");
@@ -82,6 +161,24 @@ function lfm_download() {
         xml2http.send();
     }
 
+
+/*
+https://ais-sa1.streamon.fm/7267_64k.aac
+https://ais-sa1.streamon.fm/7281_64k.aac
+https://ais-sa1.streamon.fm/7285_64k.aac
+https://ais-sa1.streamon.fm/7821_128k.aac
+http://ais-sa1.streamon.fm/7833_128k.aac
+https://ais-sa1.streamon.fm/7835_128k.aac
+http://ais-sa1.streamon.fm/7836_128k.aac
+http://cfgw.streamon.fm/stream/CFGW-64k.aac
+http://cfwd.streamon.fm/stream/CFWD-64k.aac
+http://cfwf.streamon.fm/stream/CFWF-64k.aac
+http://cjgx.streamon.fm/stream/CJGX-64k.aac
+http://cjnw.streamon.fm/stream/CJNW-64k.aac
+http://ckea.streamon.fm/stream/CKEA-64k.aac
+http://ckik.streamon.fm/stream/CKIK-64k.aac
+http://ckrm.streamon.fm/stream/CKRM-64k.aac
+*/
     cover_url = tfo.cover_url.Eval();
     if (cover_url && cover_url.match("http://metadata.cdnstream1.com")) {
         let album_url = decodeURIComponent(extractUrlValue("WWW_ALBUM_ART", cover_url));
@@ -93,6 +190,24 @@ function lfm_download() {
             return;
         }
     }
+	
+/*
+http://canada1.reliastream.com:8000
+*/
+
+	ref_url = tfo.ref_url.Eval();
+    if (cover_url && ref_url.match("http://canada1.reliastream.com:8000")) {
+        let album_url = decodeURIComponent(extractUrlValue("picture", cover_url));
+
+        if (album_url != 'null') {
+			album_url = "https://rockxradio.ca/RXR-Requests/web/pictures/" + album_url;
+            loaded = 0;
+            album_cover_file = lastfm_cover_download_folder + "\\" + _fbSanitise(tfo.artist.Eval()) + " - " + _fbSanitise(tfo.title.Eval()) + "." + album_url.split('.').pop();
+            lfm_image_dl(album_url, album_cover_file);
+            return;
+        }
+    }
+
 
     if (tfo.artist.Eval() && tfo.title.Eval() && api_key) {
         let url = "https://ws.audioscrobbler.com/2.0/?method=track.getInfo&api_key=" + api_key + "&artist=" + encodeURIComponent(tfo.artist.Eval()) + "&track=" + encodeURIComponent(tfo.title.Eval()) + "&format=json";
@@ -196,6 +311,9 @@ let timer = setInterval(() => {
                 if (cover_url && cover_url.match("http://metadata.cdnstream1.com")) {
                     window.NotifyOthers("lastfm", "cover_url (streamon) found in stream");
                 }
+				if (cover_url && ref_url.match("http://canada1.reliastream.com:8000")) {
+                    window.NotifyOthers("lastfm", "cover_url (rockXradio) found in stream");
+                }
                 thumbs.update();
             } catch (err) {
                 console.log(window.Name + " : (timer) : " + err);
@@ -256,7 +374,8 @@ function on_playback_dynamic_info_track() {
     delete_cover();
     thumbs.update();
     lfm_download();
-	if (tfo.cover_url.Eval()) console.log("cover_url: " + tfo.cover_url.Eval());
+    if (tfo.cover_url.Eval())
+        console.log("cover_url: " + tfo.cover_url.Eval());
 }
 
 function on_playback_new_track() {
