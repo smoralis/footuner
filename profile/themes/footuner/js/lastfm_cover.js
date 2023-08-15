@@ -155,6 +155,10 @@ function lfm_download() {
                         album_url = album_url.split('?')[0];
                     }
                     if (album_url) {
+                        if (json_data.eventSongArtist) {
+                            artist = json_data.eventSongArtist;
+                        }
+                        album = "n/a";
                         window.NotifyOthers("lastfm", "cover_url (planetradio) found in stream");
                         loaded = 0;
                         album_cover_file = lastfm_cover_download_folder + "\\" + _fbSanitise(tfo.artist.Eval()) + " - " + _fbSanitise(tfo.title.Eval()) + "." + album_url.split('.').pop();
@@ -165,6 +169,7 @@ function lfm_download() {
             }
         }
         xml2http.send();
+        return;
     }
 
     /*
@@ -199,7 +204,7 @@ function lfm_download() {
         }
     }
 
-/*Match by url*/
+    /*Match by url*/
 
     let match_url = "";
     let ref_url = tfo.ref_url.Eval();
@@ -275,7 +280,7 @@ function lfm_download() {
             }
         }
         break;
-		
+
     }
 
     if (tfo.artist.Eval() && tfo.title.Eval() && api_key) {
@@ -427,15 +432,13 @@ function on_paint(gr) {
 function on_playback_dynamic_info_track() {
     panel.item_focus_change();
     window.NotifyOthers("lastfm", "Last.fm");
-	window.NotifyOthers("lastfm2", "");
+    window.NotifyOthers("lastfm2", "");
     album_cover_file = "";
     listeners = "";
     playcount = "";
     delete_cover();
     thumbs.update();
-    window.SetTimeout(function () {
-        lfm_download();
-    }, 1000);
+    lfm_download();
     if (tfo.cover_url.Eval())
         console.log("cover_url: " + tfo.cover_url.Eval());
 }
@@ -443,7 +446,7 @@ function on_playback_dynamic_info_track() {
 function on_playback_new_track() {
     panel.item_focus_change();
     window.NotifyOthers("lastfm", "Last.fm");
-	window.NotifyOthers("lastfm2", "");
+    window.NotifyOthers("lastfm2", "");
     album_cover_file = "";
     listeners = "";
     playcount = "";
