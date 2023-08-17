@@ -250,24 +250,7 @@ function lfm_download() {
             }
         }
         break;
-
-    case 'http://usa14.fastcast4u.com:5132/stream':
-
-        if (cover_url) {
-            let album_url = decodeURIComponent(extractUrlValue("picture", cover_url));
-            artist = decodeURIComponent(extractUrlValue("artist", cover_url));
-            album = decodeURIComponent(extractUrlValue("album", cover_url));
-            if (album_url != 'null') {
-                window.NotifyOthers("lastfm", "cover_url (my70sradio) found in stream");
-                album_url = "https://www.my70sradio.com/php/pictures/" + album_url;
-                loaded = 0;
-                album_cover_file = lastfm_cover_download_folder + "\\" + _fbSanitise(tfo.artist.Eval()) + " - " + _fbSanitise(tfo.title.Eval()) + "." + album_url.split('.').pop();
-                lfm_image_dl(album_url, album_cover_file);
-                return;
-            }
-        }
-        break;
-		
+	
     case 'https://live.radio-selection.de/onair':
 
         if (cover_url) {
