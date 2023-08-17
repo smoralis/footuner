@@ -234,6 +234,23 @@ function lfm_download() {
         }
         break;
 
+    case 'https://443-1.autopo.st/107/stream/':
+
+        if (cover_url) {
+            let album_url = decodeURIComponent(extractUrlValue("picture", cover_url));
+            artist = decodeURIComponent(extractUrlValue("artist", cover_url));
+            album = decodeURIComponent(extractUrlValue("album", cover_url));
+            if (album_url != 'null') {
+                window.NotifyOthers("lastfm", "cover_url (epicrockradio) found in stream");
+                album_url = "https://www.kaidata.com/pictures/" + album_url;
+                loaded = 0;
+                album_cover_file = lastfm_cover_download_folder + "\\" + _fbSanitise(tfo.artist.Eval()) + " - " + _fbSanitise(tfo.title.Eval()) + "." + album_url.split('.').pop();
+                lfm_image_dl(album_url, album_cover_file);
+                return;
+            }
+        }
+        break;
+		
     case 'http://str4uice.streamakaci.com/4uclassicrock.mp3':
 
         if (cover_url) {
