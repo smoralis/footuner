@@ -50,7 +50,7 @@ function RGB(r, g, b) {
 
 let g_is_default_ui = window.InstanceType;
 let g_font = null;
-let g_text = "Last.fm";
+let g_text = "";
 let g_textcolour = 0;
 let g_textcolour_hl = 0;
 let g_backcolour = 0;
