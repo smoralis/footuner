@@ -16,6 +16,8 @@ if (!fso.FolderExists(lastfm_cover_download_folder))
 
 let api_key = utils.ReadINI(settings_file, 'lastfm', 'apikey');
 let album_cover_file = "";
+let counter = 0;
+let temp_id = counter;
 let artist = "";
 let album = "";
 let download_vbs = fb.ProfilePath + "themes\\footuner\\bin\\download.vbs";
@@ -37,7 +39,6 @@ let tfo = {
 
 let listeners;
 let playcount;
-let cover;
 let toptags = [];
 let loaded = 0;
 let cover_url;
@@ -93,7 +94,8 @@ function lfm_download() {
         artist = tfo.artist.Eval();
         album = "n/a";
         loaded = 0;
-        album_cover_file = lastfm_cover_download_folder + "\\" + _fbSanitise(tfo.artist.Eval()) + " - " + _fbSanitise(tfo.title.Eval()) + "." + cover_url.split('.').pop();
+        temp_id = counter++;
+        album_cover_file = lastfm_cover_download_folder + "\\temp-" + temp_id + "." + cover_url.split('.').pop();
         lfm_image_dl(cover_url, album_cover_file);
         return;
     }
@@ -162,7 +164,8 @@ function lfm_download() {
                         album = "n/a";
                         window.NotifyOthers("lastfm", "cover_url (planetradio) found in stream");
                         loaded = 0;
-                        album_cover_file = lastfm_cover_download_folder + "\\" + _fbSanitise(tfo.artist.Eval()) + " - " + _fbSanitise(tfo.title.Eval()) + "." + album_url.split('.').pop();
+                        temp_id = counter++;
+                        album_cover_file = lastfm_cover_download_folder + "\\temp-" + temp_id + "." + album_url.split('.').pop();
                         lfm_image_dl(album_url, album_cover_file);
                         return;
                     } else {
@@ -201,7 +204,8 @@ function lfm_download() {
         if (album_url != 'null') {
             window.NotifyOthers("lastfm", "cover_url (streamon) found in stream");
             loaded = 0;
-            album_cover_file = lastfm_cover_download_folder + "\\" + _fbSanitise(tfo.artist.Eval()) + " - " + _fbSanitise(tfo.title.Eval()) + "." + album_url.split('.').pop();
+            temp_id = counter++;
+            album_cover_file = lastfm_cover_download_folder + "\\temp-" + temp_id + "." + album_url.split('.').pop();
             lfm_image_dl(album_url, album_cover_file);
             return;
         } else {
@@ -232,7 +236,7 @@ function lfm_download() {
                 window.NotifyOthers("lastfm", "cover_url (rockXradio) found in stream");
                 album_url = "https://rockxradio.ca/RXR-Requests/web/pictures/" + album_url;
                 loaded = 0;
-                album_cover_file = lastfm_cover_download_folder + "\\" + _fbSanitise(tfo.artist.Eval()) + " - " + _fbSanitise(tfo.title.Eval()) + "." + album_url.split('.').pop();
+                album_cover_file = lastfm_cover_download_folder + "\\" + _fbSanitise(artist) + " - " + _fbSanitise(album) + "." + album_url.split('.').pop();
                 lfm_image_dl(album_url, album_cover_file);
                 return;
             } else {
@@ -251,7 +255,8 @@ function lfm_download() {
                 window.NotifyOthers("lastfm", "cover_url (epicrockradio) found in stream");
                 album_url = "https://www.kaidata.com/pictures/" + album_url;
                 loaded = 0;
-                album_cover_file = lastfm_cover_download_folder + "\\" + _fbSanitise(tfo.artist.Eval()) + " - " + _fbSanitise(tfo.title.Eval()) + "." + album_url.split('.').pop();
+                temp_id = counter++;
+                album_cover_file = lastfm_cover_download_folder + "\\temp-" + temp_id + "." + album_url.split('.').pop();
                 lfm_image_dl(album_url, album_cover_file);
                 return;
             } else {
@@ -270,7 +275,8 @@ function lfm_download() {
                 window.NotifyOthers("lastfm", "cover_url (radioselection.de) found in stream");
                 album_url = "https://radioselection.de/sam/" + album_url;
                 loaded = 0;
-                album_cover_file = lastfm_cover_download_folder + "\\" + _fbSanitise(tfo.artist.Eval()) + " - " + _fbSanitise(tfo.title.Eval()) + "." + album_url.split('.').pop();
+                temp_id = counter++;
+                album_cover_file = lastfm_cover_download_folder + "\\temp-" + temp_id + "." + album_url.split('.').pop();
                 lfm_image_dl(album_url, album_cover_file);
                 return;
             } else {
@@ -289,7 +295,8 @@ function lfm_download() {
                 window.NotifyOthers("lastfm", "cover_url (processed) found in stream");
                 album_url = "https://www.4uradios.com/imgcdr/" + album_url;
                 loaded = 0;
-                album_cover_file = lastfm_cover_download_folder + "\\" + _fbSanitise(tfo.artist.Eval()) + " - " + _fbSanitise(tfo.title.Eval()) + "." + album_url.split('.').pop();
+                temp_id = counter++;
+                album_cover_file = lastfm_cover_download_folder + "\\temp-" + temp_id + "." + album_url.split('.').pop();
                 lfm_image_dl(album_url, album_cover_file);
                 return;
             } else {
@@ -321,7 +328,8 @@ function lfm_download() {
                 }
                 album = "n/a";
                 loaded = 0;
-                album_cover_file = lastfm_cover_download_folder + "\\" + _fbSanitise(tfo.artist.Eval()) + " - " + _fbSanitise(tfo.title.Eval()) + "." + album_url.split('.').pop();
+                temp_id = counter++;
+                album_cover_file = lastfm_cover_download_folder + "\\temp-" + temp_id + "." + album_url.split('.').pop();
                 lfm_image_dl(album_url, album_cover_file);
                 return;
             } else {
@@ -332,7 +340,6 @@ function lfm_download() {
         break;
 
     }
-
 
     //tunein ID / nowPlaying
 
@@ -360,7 +367,8 @@ function lfm_download() {
                         album = "n/a";
                         window.NotifyOthers("lastfm", "cover_url (tunein_id/nowplaying) found in stream");
                         loaded = 0;
-                        album_cover_file = lastfm_cover_download_folder + "\\" + _fbSanitise(tfo.artist.Eval()) + " - " + _fbSanitise(tfo.title.Eval()) + "." + album_url.split('.').pop();
+                        temp_id = counter++;
+                        album_cover_file = lastfm_cover_download_folder + "\\temp-" + temp_id + "." + album_url.split('.').pop();
                         lfm_image_dl(album_url, album_cover_file);
                         return;
                     } else {
@@ -464,7 +472,6 @@ let timer = setInterval(() => {
 
         if ((utils.FileTest(album_cover_file, "e") && !loaded))
             try {
-                cover = "OK";
                 fso.CopyFile(album_cover_file, lastfm_cover_file);
                 loaded = 1;
                 _tt("Artist : " + artist + "\nAlbum : " + album);
@@ -582,3 +589,7 @@ thumbs.update();
 lfm_download();
 window.NotifyOthers("lastfm", "");
 window.NotifyOthers("lastfm2", "");
+
+try {
+    fso.DeleteFile(lastfm_cover_download_folder + "\\temp*.*");
+} catch (err) {}
