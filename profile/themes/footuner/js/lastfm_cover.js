@@ -54,6 +54,11 @@ function delete_cover() {
 
 function lfm_download() {
     cover_url = tfo.cover_url.Eval();
+
+    artist = tfo.artist.Eval();
+    if (decodeURIComponent(extractUrlValue("artistUrlTitle", cover_url)) != 'null')
+        artist = decodeURIComponent(extractUrlValue("artistUrlTitle", cover_url));
+
     cover_url = cover_url.split('?')[0];
 
     /*
@@ -89,9 +94,9 @@ function lfm_download() {
      */
 
     if (cover_url && cover_url.match("^https?:\\/\\/.+\\.(jpg|jpeg|png|webp|avif|gif|svg)$")) {
-        cover_url = cover_url.split('?')[0];
+											
         window.NotifyOthers("lastfm", "cover_url (image) found in stream");
-        artist = tfo.artist.Eval();
+								   
         album = "n/a";
         loaded = 0;
         temp_id = counter++;
@@ -226,7 +231,7 @@ function lfm_download() {
 
     switch (match_url) {
 
-    case 'http://canada1.reliastream.com:8000/':
+    case 'http://canada1.reliastream.com:8000/stream':
 
         if (cover_url) {
             let album_url = decodeURIComponent(extractUrlValue("picture", cover_url));
@@ -432,7 +437,7 @@ function lfm_get() {
                                 window.NotifyOthers("lastfm", "No Cover");
                         }
                     } catch (err) {
-                        // console.log(window.Name + " : (download-lfm_download) : " + err);
+                        //console.log(window.Name + " : (download-lfm_download) : " + err);
                         window.NotifyOthers("lastfm", "Not Found");
                     }
                 }
@@ -458,7 +463,7 @@ function lfm_image_dl(url, file) {
                     objADOStream.SaveToFile(file);
                     objADOStream.Close();
                 } catch (err) {
-                    // console.log(window.Name + " : (download-lfm_image_dl) : " + err);
+                    //console.log(window.Name + " : (download-lfm_image_dl) : " + err);
                 }
             }
         }
@@ -542,7 +547,7 @@ function on_playback_dynamic_info_track() {
     thumbs.update();
     lfm_download();
     if (tfo.cover_url.Eval())
-        console.log("cover_url: " + tfo.cover_url.Eval());
+        console.log("STREAM_URL: " + tfo.cover_url.Eval());
 }
 
 function on_playback_new_track() {
