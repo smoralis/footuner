@@ -97,6 +97,7 @@ function start_search(info, callback) {
                 if (data.length > -1) {
                     for (d = 0; d < data.length; d++) {
                         lyrics += data[d].innerText;
+						lyrics += "\n";
                     }
                 }
             }
