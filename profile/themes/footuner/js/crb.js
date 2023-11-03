@@ -364,7 +364,7 @@ function crb_count(stationuuid) {
 
 function crb_countries_get() {
     let xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
-    let selection = crb_servers[crb_server] + '/json/countries';
+    let selection = crb_servers[crb_server] + 'json/countries';
     xmlhttp.open('GET', selection);
     xmlhttp.setRequestHeader('User-Agent', "spider_monkey_panel_footuner");
     xmlhttp.onreadystatechange = () => {
@@ -380,7 +380,7 @@ function crb_countries_get() {
 
 function crb_tags_get() {
     let xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
-    let selection = crb_servers[crb_server] + '/json/tags';
+    let selection = crb_servers[crb_server] + 'json/tags';
     xmlhttp.open('GET', selection);
     xmlhttp.setRequestHeader('User-Agent', "spider_monkey_panel_footuner");
     xmlhttp.onreadystatechange = () => {
@@ -396,7 +396,7 @@ function crb_tags_get() {
 
 function crb_stats_get() {
     let xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
-    let selection = crb_servers[crb_server] + '/json/stats';
+    let selection = crb_servers[crb_server] + 'json/stats';
     xmlhttp.open('GET', selection);
     xmlhttp.setRequestHeader('User-Agent', "spider_monkey_panel_footuner");
     xmlhttp.onreadystatechange = () => {
