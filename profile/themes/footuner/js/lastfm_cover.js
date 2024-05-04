@@ -34,7 +34,8 @@ let tfo = {
     cover_url: fb.TitleFormat('[$info(cover_url)]'),
     ref_url: fb.TitleFormat('[$info(@)]'),
     path: fb.TitleFormat('%path%'),
-    tunein_id: fb.TitleFormat('[%STREAM_TUNEIN_ID%]')
+    tunein_id: fb.TitleFormat('[%STREAM_TUNEIN_ID%]'),
+	coverurl: fb.TitleFormat('[%COVERURL%]')
 }
 
 let listeners;
@@ -53,15 +54,24 @@ function delete_cover() {
 }
 
 function lfm_download() {
-    cover_url = tfo.cover_url.Eval();
-
-    artist = tfo.artist.Eval();
-    if (decodeURIComponent(extractUrlValue("artistUrlTitle", cover_url)) != 'null')
-        artist = decodeURIComponent(extractUrlValue("artistUrlTitle", cover_url));
-
-    cover_url = cover_url.split('?')[0];
-
-    /*
+	
+	// %COVERURL% in metadata / ogg streams
+	
+	cover_url = tfo.coverurl.Eval();
+	    if (cover_url && cover_url.match("^https?:\\/\\/.+\\.(jpg|jpeg|png|webp|avif|gif|svg)$")) {
+        window.NotifyOthers("lastfm", "cover_url (image) found in stream");
+        album = "n/a";
+        loaded = 0;
+        temp_id = counter++;
+        album_cover_file = lastfm_cover_download_folder + "\\temp-" + temp_id + "." + cover_url.split('.').pop();
+        lfm_image_dl(cover_url, album_cover_file);
+        return;
+    }
+	
+	
+	// $info(cover_url) 
+	
+	/*
     http://stream.radioparadise.com/aac-32
     http://stream.radioparadise.com/aac-64
     http://stream.radioparadise.com/aac-128
@@ -92,11 +102,19 @@ function lfm_download() {
     http://streams.olympia-streams.nl:80/olympia192
     http://stream.dandelionradio.com:9414/
      */
+	
+    cover_url = tfo.cover_url.Eval();
+
+    artist = tfo.artist.Eval();
+    if (decodeURIComponent(extractUrlValue("artistUrlTitle", cover_url)) != 'null')
+        artist = decodeURIComponent(extractUrlValue("artistUrlTitle", cover_url));
+
+    cover_url = cover_url.split('?')[0];
+
+
 
     if (cover_url && cover_url.match("^https?:\\/\\/.+\\.(jpg|jpeg|png|webp|avif|gif|svg)$")) {
-											
         window.NotifyOthers("lastfm", "cover_url (image) found in stream");
-								   
         album = "n/a";
         loaded = 0;
         temp_id = counter++;
@@ -104,6 +122,7 @@ function lfm_download() {
         lfm_image_dl(cover_url, album_cover_file);
         return;
     }
+	
 
     /*
     http://edge-bauerall-01-gos2.sharp-stream.com/forth1.mp3
@@ -392,7 +411,10 @@ function lfm_download() {
 function lfm_get() {
     if (tfo.artist.Eval() && tfo.title.Eval() && api_key) {
         let url = "https://ws.audioscrobbler.com/2.0/?method=track.getInfo&api_key=" + api_key + "&artist=" + encodeURIComponent(tfo.artist.Eval()) + "&track=" + encodeURIComponent(tfo.title.Eval()) + "&format=json";
-        xmlhttp.open('GET', url);
+        
+		console.log(url);
+		
+		xmlhttp.open('GET', url);
         xmlhttp.setRequestHeader('User-Agent', "spider_monkey_panel_footuner");
         xmlhttp.onreadystatechange = () => {
             if (xmlhttp.readyState == 4) {
@@ -437,7 +459,7 @@ function lfm_get() {
                                 window.NotifyOthers("lastfm", "No Cover");
                         }
                     } catch (err) {
-                        //console.log(window.Name + " : (download-lfm_download) : " + err);
+                        console.log(window.Name + " : (download-lfm_download) : " + err);
                         window.NotifyOthers("lastfm", "Not Found");
                     }
                 }
@@ -463,7 +485,7 @@ function lfm_image_dl(url, file) {
                     objADOStream.SaveToFile(file);
                     objADOStream.Close();
                 } catch (err) {
-                    //console.log(window.Name + " : (download-lfm_image_dl) : " + err);
+                    console.log(window.Name + " : (download-lfm_image_dl) : " + err);
                 }
             }
         }
@@ -548,6 +570,8 @@ function on_playback_dynamic_info_track() {
     lfm_download();
     if (tfo.cover_url.Eval())
         console.log("STREAM_URL: " + tfo.cover_url.Eval());
+	 if (tfo.coverurl.Eval())
+        console.log("COVERURL: " + tfo.coverurl.Eval());
 }
 
 function on_playback_new_track() {
