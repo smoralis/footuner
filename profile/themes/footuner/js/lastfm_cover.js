@@ -35,7 +35,7 @@ let tfo = {
     ref_url: fb.TitleFormat('[$info(@)]'),
     path: fb.TitleFormat('%path%'),
     tunein_id: fb.TitleFormat('[%STREAM_TUNEIN_ID%]'),
-	coverurl: fb.TitleFormat('[%COVERURL%]')
+	coverurl: fb.TitleFormat('[%COVER_URL%]')
 }
 
 let listeners;
@@ -55,7 +55,7 @@ function delete_cover() {
 
 function lfm_download() {
 	
-	// %COVERURL% in metadata / ogg streams
+	// %COVER_URL% in metadata / ogg streams
 	
 	cover_url = tfo.coverurl.Eval();
 	    if (cover_url && cover_url.match("^https?:\\/\\/.+\\.(jpg|jpeg|png|webp|avif|gif|svg)$")) {
