@@ -38,12 +38,8 @@ Icecast (https://dir.xiph.org/)
 2. Download https://github.com/smoralis/footuner/archive/master.zip
 3. Copy the profile folder in the zip into the installation folder (overwrite existing profile folder) 
 
-4.Some scripts require the installation of the following fonts:
-FontAwesome
-Guifx v2 Transports
-Wingdings
-Wingdings 2
-Wingdings 3
+4. Some scripts require the installation of the following fonts: FontAwesome, 
+Guifx v2 Transports, Wingdings, Wingdings 2, Wingdings 3
 
 # Upgrading
 
