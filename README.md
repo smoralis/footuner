@@ -70,4 +70,8 @@ Double click the MyHistory Panel to save track details.
 
 streamWriter https://streamwriter.org/
 
+If you copy a new version into the folder where StreamWriter is found (default location is %profile%\themes\footuner\bin\streamwriter), you need to run it once outside of FooTuner by clicking the exe directly.
+There's a 'first run' popup that won't show if launched from FooTuner. 
+
+
 mp3DirectCut
