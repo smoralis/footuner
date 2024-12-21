@@ -1,5 +1,5 @@
 /*----------------------------------------------
-Date: 2022/05/02
+Date: 2024/12/21
 Author: zeremy modified by ottodix re-mod by zeremy for footuner
 ----------------------------------------------*/
 
@@ -91,7 +91,7 @@ function start_search(info, callback) {
                 doc.open();
                 var div = doc.createElement('div');
                 div.innerHTML = response;
-                var data = div.querySelectorAll('div[class^="Lyrics__Container"]');
+                var data = div.querySelectorAll('div[class^="Lyrics-sc"]');
                 doc.close();
 
                 if (data.length > -1) {
