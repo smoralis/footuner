@@ -96,7 +96,7 @@ function start_search(info, callback) {
 
                 if (data.length > -1) {
                     for (d = 0; d < data.length; d++) {
-                        lyrics += data[d].innerText.replace(/.+?(?=Read More)Read More/g, '').replace(/.+?(?=Contributor)Contributor./g, '').replace(/.+?(?=Lyrics)Lyrics/g, '\n');
+                        lyrics += data[d].innerText.replace(/.+?(?=Read More)Read More/g, '').replace(/.+?(?=Translations)Translations/g, '').replace(/.+?(?=Contributor)Contributor./g, '').replace(/.+?(?=Lyrics)Lyrics/g, '\n');
 						lyrics += "\n";
                     }
                 }
